@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MarkdownToPdf.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "README.md -o"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using CommandLine;
-using MarkdownToPdf;
-using MarkdownToPdf.Console;
+using Markdown2Pdf;
+using Markdown2Pdf.Console;
 
 //todo: error handling
 var result = Parser.Default.ParseArguments<Options>(args);
@@ -17,17 +17,14 @@ Console.WriteLine("Converting markdown to pdf...");
 
 var outputPath = options.OutputPath ?? Path.ChangeExtension(options.InputPath, "pdf");
 
-//todo: hmp test project
-
-
-var settings = new MarkdownToPdfSettings {
+var settings = new Markdown2PdfSettings {
   HeaderUrl = options.HeaderPath,
   FooterUrl = options.FooterPath,
 };
 
 var marginOptions = options.MarginOptions;
 if (marginOptions != null) {
-  settings.MarginOptions = new MarkdownToPdf.MarginOptions {
+  settings.MarginOptions = new Markdown2Pdf.MarginOptions {
     Top = marginOptions.Top,
     Bottom = marginOptions.Bottom,
     Left = marginOptions.Left,
@@ -35,7 +32,7 @@ if (marginOptions != null) {
   };
 }
 
-var converter = new MarkdownToPdfConverter(settings);
+var converter = new Markdown2PdfConverter(settings);
 converter.Convert(options.InputPath, outputPath);
 
 Console.WriteLine($"Generated pdf at: {outputPath}");

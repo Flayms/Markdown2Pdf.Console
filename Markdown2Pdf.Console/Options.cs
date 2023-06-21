@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace MarkdownToPdf.Console;
+namespace Markdown2Pdf.Console;
 
 internal class Options {
 

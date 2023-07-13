@@ -2,6 +2,7 @@
 using CommandLine;
 using Markdown2Pdf;
 using Markdown2Pdf.Console;
+using Markdown2Pdf.Options;
 
 //todo: error handling
 var result = Parser.Default.ParseArguments<Options>(args);
@@ -16,15 +17,18 @@ if (options.InputPath == null)
 Console.WriteLine("Converting markdown to pdf...");
 
 var outputPath = options.OutputPath ?? Path.ChangeExtension(options.InputPath, "pdf");
+var currentDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "node_modules");
 
-var settings = new Markdown2PdfSettings {
+var markdown2pdfOptions = new Markdown2PdfOptions {
   HeaderUrl = options.HeaderPath,
   FooterUrl = options.FooterPath,
-};
+  ModuleOptions = ModuleOptions.FromLocalPath(currentDir),
+  KeepHtml = options.KeepHtml
+  };
 
 var marginOptions = options.MarginOptions;
 if (marginOptions != null) {
-  settings.MarginOptions = new Markdown2Pdf.MarginOptions {
+  markdown2pdfOptions.MarginOptions = new Markdown2Pdf.Options.MarginOptions {
     Top = marginOptions.Top,
     Bottom = marginOptions.Bottom,
     Left = marginOptions.Left,
@@ -32,8 +36,8 @@ if (marginOptions != null) {
   };
 }
 
-var converter = new Markdown2PdfConverter(settings);
-converter.Convert(options.InputPath, outputPath);
+var converter = new Markdown2PdfConverter(markdown2pdfOptions);
+converter.Convert(Path.GetFullPath(options.InputPath), Path.GetFullPath(outputPath));
 
 Console.WriteLine($"Generated pdf at: {outputPath}");
 

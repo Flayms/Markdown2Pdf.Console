@@ -12,3 +12,5 @@ Open Help:
 ```sh
 Markdown2Pdf.Console --help # Display all options
 ```
+
+$\Delta$

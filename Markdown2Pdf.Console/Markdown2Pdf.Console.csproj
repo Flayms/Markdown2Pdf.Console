@@ -8,8 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\README.md" Link="README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Markdown2Pdf" Version="0.2.1" />
+    <PackageReference Include="Markdown2Pdf" Version="0.3.2" />
   </ItemGroup>
 	
 </Project>

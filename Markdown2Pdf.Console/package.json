@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "mathjax": "^3.2.2",
+    "mermaid": "^10.2.3"
+  }
+}

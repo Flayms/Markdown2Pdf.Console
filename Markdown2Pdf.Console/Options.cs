@@ -24,6 +24,9 @@ internal class Options {
 
   [Option('c', "chrome-path", HelpText = "If this is set, uses the provided chrome or chromium executable instead of self-downloading it.")]
   public string? ChromePath { get; set; }
+
+  [Option('k', "keep-html", HelpText = "If this is set, the temporary html file does not get deleted.")]
+  public bool KeepHtml { get; set; }
 }
 
 public class MarginOptions {

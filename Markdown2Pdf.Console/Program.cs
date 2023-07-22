@@ -22,7 +22,8 @@ var currentDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "node_modul
 var markdown2pdfOptions = new Markdown2PdfOptions {
   HeaderUrl = options.HeaderPath,
   FooterUrl = options.FooterPath,
-  ModuleOptions = ModuleOptions.FromLocalPath(currentDir),
+  ModuleOptions = ModuleOptions.Remote,
+  //ModuleOptions = ModuleOptions.FromLocalPath(currentDir),
   KeepHtml = options.KeepHtml
   };
 
@@ -42,5 +43,6 @@ converter.Convert(Path.GetFullPath(options.InputPath), Path.GetFullPath(outputPa
 Console.WriteLine($"Generated pdf at: {outputPath}");
 
 //todo: what if started from different directory?
+//todo: needs to work on linux too
 if (options.OpenAfterConversion)
   Process.Start("cmd", $"/c start {outputPath}");

@@ -1,4 +1,10 @@
-# Markdown2Pdf.Console
+<h1 align="center">Markdown2Pdf.Console</h1>
+
+<p align="center">
+  <img src="./assets/md2pdf-console.svg" alt="Logo" Width=128px/>
+  <br>
+</p>
+
 Console application for converting Markdown to Pdf, using [Markdown2Pdf](https://github.com/Flayms/Markdown2Pdf).
 
 ## Getting started

@@ -34,14 +34,10 @@ jobs:
     # Install any NuGet packages required.
     - name: Install dependencies
       run: dotnet restore
-      
-    # Build the project
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
 
     # Publish the project
     - name: Publish
-      run: dotnet publish -c:Release -o:".\Markdown2Pdf.Console\bin\Publish\" ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" /p:Version=${{ env.Version_Number }}
+      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -o:"Markdown2Pdf.Console\bin\Publish\" /p:Version=${{ env.Version_Number }}
 
     # Zip the publish
     - name: Zip windows build

@@ -8,6 +8,11 @@ MINOR_INDEX=1
 PATCH_INDEX=2
 INDEX_TO_INCREASE=$PATCH_INDEX
 
+# Assign default value if empty
+if [ -z "$LAST_TAG" ]; then
+  LAST_TAG="v0.0.0"
+fi
+
 echo "Last Tag: $LAST_TAG"
 
 # Create file
@@ -81,7 +86,7 @@ if [[ $INDEX_TO_INCREASE = $PATCH_INDEX ]]; then
 fi
 
 VERSION_NUMBER="$MAJOR.$MINOR.$PATCH"
-TAG_NAME="v$VERSION_NAME"
+TAG_NAME="v$VERSION_NUMBER"
 RELEASE_NAME="Version $TAG_NAME"
 
 # informational output

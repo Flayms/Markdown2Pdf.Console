@@ -1,6 +1,6 @@
-# This workflow tests, builds and releases the project on github and nuget.org
+# This workflow tests, builds and publishes the project on github
 
-name: build-and-release
+name: publish
 on: [workflow_dispatch]
 env:
   # Specifiy dotnet SDK Version
@@ -8,7 +8,7 @@ env:
 
 jobs:
   ci:
-    name: build-and-release-job
+    name: publish-job
     runs-on: ubuntu-latest
 
     # Need write permission for creating release-notes file
@@ -37,7 +37,7 @@ jobs:
 
     # Publish the project
     - name: Publish
-      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -o:"Markdown2Pdf.Console\bin\Publish\" /p:Version=${{ env.Version_Number }}
+      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -o:"Markdown2Pdf.Console\bin\Publish\\" /p:Version=${{ env.Version_Number }}
 
     # Zip the publish
     - name: Zip windows build

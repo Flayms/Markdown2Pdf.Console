@@ -37,13 +37,13 @@ jobs:
 
     # Publish the project
     - name: Publish
-      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -o:"Markdown2Pdf.Console\bin\Publish\\" /p:Version=${{ env.Version_Number }}
+      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -r:win-x64 -o:"Markdown2Pdf.Console\bin\Publish\\" -p:PublishSingleFile=true /p:Version=${{ env.Version_Number }}
 
     # Zip the publish
     - name: Zip windows build
       uses: thedoctor0/zip-release@master
       with:
-        path: ./Markdown2Pdf.Console/bin/Publish/
+        directory: ./Markdown2Pdf.Console/bin/Publish/
         filename: windows-build.zip
 
     # Create Release Log
@@ -67,4 +67,4 @@ jobs:
         body_path: "${{ github.workspace }}\\release-notes.md"
         token: ${{ secrets.GITHUB_TOKEN }}
         files: |
-          windows-build.zip
+          ./Markdown2Pdf.Console/bin/Publish/windows-build.zip

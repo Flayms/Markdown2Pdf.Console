@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 
 namespace Markdown2Pdf.Console;
 
@@ -19,8 +19,8 @@ internal class Options {
   [Option('o', "open-after-conversion", Default = false, HelpText = "If enabled, opens the generated pdf after execution.")]
   public bool OpenAfterConversion { get; set; }
 
-  [Option('m', "margin-options", HelpText = "Css-Margin for the content in the pdf to generate. Values must be comma-separated.")]
-  public MarginOptions? MarginOptions { get; set; }
+  [Option('m', "margin-options", HelpText = "Css-Margins for the content in the pdf to generate. Values must be comma-separated. Default: 50px")]
+  public MarginOptions? MarginOptions { get; set; } = new("50px");
 
   [Option('c', "chrome-path", HelpText = "If this is set, uses the provided chrome or chromium executable instead of self-downloading it.")]
   public string? ChromePath { get; set; }

@@ -13,6 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\assets\md2pdf-console.svg" Link="assets\md2pdf-console.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\README.md" Link="README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -20,7 +23,11 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="Markdown2Pdf" Version="0.5.1" />
+    <PackageReference Include="Markdown2Pdf" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="assets\" />
   </ItemGroup>
 	
 </Project>

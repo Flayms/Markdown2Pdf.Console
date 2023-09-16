@@ -3,7 +3,7 @@
 name: build-and-release
 on: [workflow_dispatch]
 env:
-  # Specifies dotnet SDK Version
+  # Specifiy dotnet SDK Version
   DOTNET_VERSION: '6.0.x'
 
 jobs:
@@ -16,28 +16,39 @@ jobs:
       contents: write
 
     steps:
-    # Checks out the source code at the latest commit
+    # Check out the source code at the latest commit
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    # Create new version from commits and write to enviornment variables (env.Tag_Name + env.Release_Name + env.Nuget_Version)
+    # Create new version from commits and write to enviornment variables (env.Version_Number + env.Tag_Name + env.Release_Name)
     - name: Create Version
       run: bash ".github/workflows/create-next-version.sh" 
     
-    # Installs the .NET SDK on the build machine
+    # Install the .NET SDK on the build machine
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         
-    # Installs any NuGet packages required.
+    # Install any NuGet packages required.
     - name: Install dependencies
       run: dotnet restore
       
-    # Builds the project
+    # Build the project
     - name: Build
       run: dotnet build --configuration Release --no-restore
+
+    # Publish the project
+    - name: Publish
+      run: dotnet publish -c:Release -o:".\Markdown2Pdf.Console\bin\Publish\" ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" /p:Version=${{ env.Version_Number }}
+
+    # Zip the publish
+    - name: Zip windows build
+      uses: thedoctor0/zip-release@master
+      with:
+        path: .\Markdown2Pdf.Console\bin\Publish\
+        filename: windows-build.zip
 
     # Create Release Log
     # Need to fetch, otherwise doesn't know last commits
@@ -59,3 +70,5 @@ jobs:
         name: "${{ env.Release_Name }}"
         body_path: "${{ github.workspace }}\\release-notes.md"
         token: ${{ secrets.GITHUB_TOKEN }}
+        files: |
+          windows-build.zip

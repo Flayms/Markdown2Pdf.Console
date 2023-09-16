@@ -80,17 +80,17 @@ if [[ $INDEX_TO_INCREASE = $PATCH_INDEX ]]; then
   let "PATCH=PATCH+1"
 fi
 
-VERSION_NAME="$MAJOR.$MINOR.$PATCH"
+VERSION_NUMBER="$MAJOR.$MINOR.$PATCH"
 TAG_NAME="v$VERSION_NAME"
 RELEASE_NAME="Version $TAG_NAME"
 
 # informational output
-echo "Tag_Name:      $TAG_NAME"
-echo "Release_Name:  $RELEASE_NAME"
-echo "Nuget_Version: $VERSION_NAME"
+echo "Tag_Name:       $TAG_NAME"
+echo "Release_Name:   $RELEASE_NAME"
+echo "Version_Number: $VERSION_NUMBER"
 
 # write to github enviornment variables
 TEST_VALUE="Hello Variable!"
 echo "Tag_Name=$TAG_NAME" >> $GITHUB_ENV
 echo "Release_Name=$RELEASE_NAME" >> $GITHUB_ENV
-echo "Nuget_Version=$VERSION_NAME" >> $GITHUB_ENV
+echo "Version_Number=$VERSION_NUMBER" >> $GITHUB_ENV

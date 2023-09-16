@@ -43,7 +43,7 @@ jobs:
     - name: Zip windows build
       uses: thedoctor0/zip-release@master
       with:
-        path: .\Markdown2Pdf.Console\bin\Publish\
+        path: ./Markdown2Pdf.Console/bin/Publish/
         filename: windows-build.zip
 
     # Create Release Log

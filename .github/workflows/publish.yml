@@ -37,7 +37,7 @@ jobs:
 
     # Publish the project
     - name: Publish
-      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -r:win-x64 -o:"Markdown2Pdf.Console\bin\Publish\\" -p:PublishSingleFile=true /p:Version=${{ env.Version_Number }}
+      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -r:win-x64 -o:"Markdown2Pdf.Console\bin\Publish\\" -p:PublishSingleFile=true -p:SelfContained=true /p:Version=${{ env.Version_Number }}
 
     # Zip the publish
     - name: Zip windows build

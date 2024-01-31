@@ -5,7 +5,7 @@
   <br>
 </p>
 
-Console application for converting Markdown to Pdf, using [Markdown2Pdf](https://github.com/Flayms/Markdown2Pdf).
+Command-line application for converting Markdown to Pdf, using [Markdown2Pdf](https://github.com/Flayms/Markdown2Pdf).
 
 ## Getting started
 

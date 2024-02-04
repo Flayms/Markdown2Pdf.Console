@@ -1,19 +1,18 @@
 using System.Diagnostics;
+using System.Reflection;
 using CommandLine;
 using CommandLine.Text;
 using Markdown2Pdf;
 using Markdown2Pdf.Console;
 using Markdown2Pdf.Options;
+using PuppeteerSharp.Media;
 
-// TODO: error handling
 var parser = new Parser(settings => {
   settings.CaseInsensitiveEnumValues = true;
   settings.CaseSensitive = false;
   settings.HelpWriter = null;
-  settings.IgnoreUnknownArguments = false;
-  settings.AutoHelp = true;
-  settings.AutoVersion = true;
 });
+
 var result = parser.ParseArguments<Options>(args);
 var options = result.Value;
 
@@ -22,7 +21,6 @@ if (result.Tag == ParserResultType.NotParsed) {
   return;
 }
 
-// TODO: better error handling!
 if (options.InputPath == null)
   return;
 
@@ -79,20 +77,32 @@ static Markdown2PdfOptions _CreateMarkdown2PdfOptions(Options options) {
     _ => Theme.Custom(options.Theme),
   };
 
-  // markdown2PdfOptions.Theme = options.Theme;
-  markdown2PdfOptions.CodeHighlightTheme = options.CodeHighlightTheme;
+  markdown2PdfOptions.CodeHighlightTheme = GetPropertyValue<CodeHighlightTheme>(options.CodeHighlightTheme);
+
   markdown2PdfOptions.DocumentTitle = options.DocumentTitle;
   markdown2PdfOptions.CustomCss = options.CustomCss;
   markdown2PdfOptions.IsLandscape = options.IsLandscape;
-  markdown2PdfOptions.Format = options.Format;
+  markdown2PdfOptions.Format = GetPropertyValue<PaperFormat>(options.Format);
   markdown2PdfOptions.Scale = options.Scale;
 
-  if (markdown2PdfOptions.TableOfContents != null) {
+  if (options.TableOfContents != null) {
     var isOrdered = options.TableOfContents == TableOfContentsType.Ordered;
     markdown2PdfOptions.TableOfContents = new TableOfContents(isOrdered, options.TableOfContentsMaxDepth);
   }
 
   return markdown2PdfOptions;
+}
+
+static T GetPropertyValue<T>(string propertyName) {
+  var property = typeof(T).GetProperty(propertyName,
+  BindingFlags.Static | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+  if (property == null) {
+    // TODO: dipslay help
+    throw new ArgumentException();
+  }
+
+  return (T)property.GetValue(null, null)!;
 }
 
 static void DisplayHelp<T>(ParserResult<T> result, IEnumerable<Error> errors) {

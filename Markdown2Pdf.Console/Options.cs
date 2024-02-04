@@ -30,36 +30,46 @@ internal class Options {
   [Option('k', "keep-html", HelpText = "If this is set, the temporary html file does not get deleted.")]
   public bool KeepHtml { get; set; }
 
-  // TODO: theme
-  [Option('t', "theme", Default = "github", HelpText = "The theme to use for styling the document.\r\n" +
+  [Option('t', Default = "github", HelpText = "The theme to use for styling the document.\r\n" +
     "Can either be a predefined value (github, latex) or a path to a custom css.")]
-  public string Theme { get; set; }
-  // TODO: code-highlight-theme
+  public string Theme { get; set; } = string.Empty;
 
-  [Option("code-highlight-theme", HelpText = "(Default: Github) The theme to use for styling the markdown code-blocks.")]
-  public CodeHighlightTheme CodeHighlightTheme { get; set; } = CodeHighlightTheme.Github;
-  // TODO: document-title
+  [Option("code-highlight-theme", Default = "github", HelpText = "The theme to use for styling the markdown code-blocks.\r\n" +
+    "Valid Values: See https://github.com/Flayms/Markdown2Pdf/blob/main/Markdown2Pdf/Options/CodeHighlightTheme.cs for an overview of all themes.")]
+  public string CodeHighlightTheme { get; set; } = string.Empty;
+
+  // TODO: test
+  [Option("document-title", HelpText = "The title of this document. " +
+    "Can be injected into the header / footer by adding the class document-title to the element.")]
   public string? DocumentTitle { get; set; }
-  // TODO: custom-css
+
+  // TODO: test
   // TODO: make nullbable in library
   [Option("custom-css", HelpText = "A string containing CSS to apply extra styling to the document.")]
   public string CustomCss { get; set; } = string.Empty;
-  // TODO: is-landscape
+
+  // TODO: test
   [Option('l', "is-landscape", Default = false, HelpText = "Paper orientation.")]
   public bool IsLandscape { get; set; }
-  // TODO: format
-  [Option('p', "format", HelpText = "(Default: A4) The paper format for the PDF.")]
-  public PaperFormat Format { get; set; } = PaperFormat.A4;
-  // TODO: scale
+
+  // TODO: support custom values e.g 8.5m,11 (in inches)
+  // TODO: test
+  [Option('p', "format", Default = "A4", HelpText = "The paper format for the PDF.\r\n" +
+    "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6")]
+  public string Format { get; set; } = string.Empty;
+
   [Option('s', "scale", HelpText = "(Default: 1) Scale of the content. Must be between 0.1 and 2.")]
   public decimal Scale { get; set; } = 1;
-  // TODO: table-of-contents
-  [Option("table-of-contents", HelpText = "If set, a table of contents will be generated.")]
 
-  //todo: maybe make this a verb
+  // TODO: test
+  // TODO: maybe make this a verb
+  [Option("toc", Default = null, HelpText = "If set, Creates a TOC out of the markdown headers " +
+    "and writes it into a <!--TOC--> comment within the markdown document..")]
   public TableOfContentsType? TableOfContents { get; set; }
 
-  [Option("table-of-contents-max-depth", Default = 3, HelpText = "The maximum depth of the table of contents.")]
+  // TODO: test
+  [Option("toc-max-depth", Default = 3, HelpText = "The maximum depth of the table of contents. " +
+    "Requires --toc to be set.")]
   public int TableOfContentsMaxDepth { get; set; }
 }
 

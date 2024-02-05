@@ -1,6 +1,4 @@
 using CommandLine;
-using Markdown2Pdf.Options;
-using PuppeteerSharp.Media;
 
 namespace Markdown2Pdf.Console;
 
@@ -30,11 +28,11 @@ internal class Options {
   [Option('k', "keep-html", HelpText = "If this is set, the temporary html file does not get deleted.")]
   public bool KeepHtml { get; set; }
 
-  [Option('t', Default = "github", HelpText = "The theme to use for styling the document.\r\n" +
+  [Option('t', Default = "github", HelpText = "The theme to use for styling the document. " +
     "Can either be a predefined value (github, latex) or a path to a custom css.")]
   public string Theme { get; set; } = string.Empty;
 
-  [Option("code-highlight-theme", Default = "github", HelpText = "The theme to use for styling the markdown code-blocks.\r\n" +
+  [Option("code-highlight-theme", Default = "github", HelpText = "The theme to use for styling the markdown code-blocks. " +
     "Valid Values: See https://github.com/Flayms/Markdown2Pdf/blob/main/Markdown2Pdf/Options/CodeHighlightTheme.cs for an overview of all themes.")]
   public string CodeHighlightTheme { get; set; } = string.Empty;
 
@@ -54,7 +52,7 @@ internal class Options {
 
   // TODO: support custom values e.g 8.5m,11 (in inches)
   // TODO: test
-  [Option('p', "format", Default = "A4", HelpText = "The paper format for the PDF.\r\n" +
+  [Option('p', "format", Default = "A4", HelpText = "The paper format for the PDF. " +
     "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6")]
   public string Format { get; set; } = string.Empty;
 
@@ -64,7 +62,7 @@ internal class Options {
   // TODO: test
   // TODO: maybe make this a verb
   [Option("toc", Default = null, HelpText = "If set, Creates a TOC out of the markdown headers " +
-    "and writes it into a <!--TOC--> comment within the markdown document..")]
+    "and writes it into a <!--TOC--> comment within the markdown document.")]
   public TableOfContentsType? TableOfContents { get; set; }
 
   // TODO: test

@@ -109,6 +109,7 @@ static void DisplayHelp<T>(ParserResult<T> result, IEnumerable<Error> errors) {
   var helpText = HelpText.AutoBuild(result, h => {
     HelpText.DefaultParsingErrorsHandler(result, h);
     h.AddEnumValuesToHelpText = true;
+    h.AddDashesToOption = true;
     return h;
   }, e => e, verbsIndex: true);
 

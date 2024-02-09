@@ -1,4 +1,4 @@
-using CommandLine;
+﻿using CommandLine;
 
 namespace Markdown2Pdf.Console;
 
@@ -36,23 +36,18 @@ internal class Options {
     "Valid Values: See https://github.com/Flayms/Markdown2Pdf/blob/main/Markdown2Pdf/Options/CodeHighlightTheme.cs for an overview of all themes.")]
   public string CodeHighlightTheme { get; set; } = string.Empty;
 
-  // TODO: test
   [Option("document-title", HelpText = "The title of this document. " +
     "Can be injected into the header / footer by adding the class document-title to the element.")]
   public string? DocumentTitle { get; set; }
 
-  // TODO: test
-  // TODO: make nullbable in library
-  [Option("custom-css", HelpText = "A string containing any content valid inside a html <head> to apply extra scripting / styling to the document.")]
+  [Option("custom-head-content", HelpText = "A string containing any content valid inside a html <head> to apply extra scripting / styling to the document.")]
   public string? CustomHeadContent { get; set; }
 
-  // TODO: test
   [Option('l', "is-landscape", Default = false, HelpText = "Paper orientation.")]
   public bool IsLandscape { get; set; }
 
   // TODO: support custom values e.g 8.5m,11 (in inches)
-  // TODO: test
-  [Option('p', "format", Default = "A4", HelpText = "The paper format for the PDF. " +
+  [Option("format", Default = "A4", HelpText = "The paper format for the PDF. " +
     "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6")]
   public string Format { get; set; } = string.Empty;
 

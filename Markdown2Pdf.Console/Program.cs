@@ -80,7 +80,7 @@ static Markdown2PdfOptions _CreateMarkdown2PdfOptions(Options options) {
   markdown2PdfOptions.CodeHighlightTheme = GetPropertyValue<CodeHighlightTheme>(options.CodeHighlightTheme);
 
   markdown2PdfOptions.DocumentTitle = options.DocumentTitle;
-  markdown2PdfOptions.CustomCss = options.CustomCss;
+  markdown2PdfOptions.CustomHeadContent = options.CustomHeadContent;
   markdown2PdfOptions.IsLandscape = options.IsLandscape;
   markdown2PdfOptions.Format = GetPropertyValue<PaperFormat>(options.Format);
   markdown2PdfOptions.Scale = options.Scale;

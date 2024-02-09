@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using CommandLine;
 using CommandLine.Text;
@@ -37,7 +37,7 @@ Console.WriteLine($"Generated pdf at: {outputPath}");
 
 // TODO: what if started from different directory?
 if (options.OpenAfterConversion)
-  Process.Start(new ProcessStartInfo { FileName = outputPath, UseShellExecute = true });
+  _ = Process.Start(new ProcessStartInfo { FileName = outputPath, UseShellExecute = true });
 
 static Markdown2PdfOptions _CreateMarkdown2PdfOptions(Options options) {
   var markdown2PdfOptions = new Markdown2PdfOptions {
@@ -107,7 +107,7 @@ static T GetPropertyValue<T>(string propertyName) {
 
 static void DisplayHelp<T>(ParserResult<T> result, IEnumerable<Error> errors) {
   var helpText = HelpText.AutoBuild(result, h => {
-    HelpText.DefaultParsingErrorsHandler(result, h);
+    _ = HelpText.DefaultParsingErrorsHandler(result, h);
     h.AddEnumValuesToHelpText = true;
     h.AddDashesToOption = true;
     return h;

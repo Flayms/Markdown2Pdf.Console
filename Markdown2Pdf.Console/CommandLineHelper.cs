@@ -17,28 +17,31 @@ internal class CommandLineHelper(string[] args) {
       settings.CaseInsensitiveEnumValues = true;
       settings.CaseSensitive = false;
       settings.HelpWriter = null;
+      settings.AutoVersion = true;
     });
 
     var result = this._parserResult = parser.ParseArguments<Options>(this._args);
     cliOptions = result.Value;
 
     if (result.Tag == ParserResultType.NotParsed) {
-      _DisplayHelp(result, result.Errors);
+      this._DisplayHelp();
       return false;
     }
 
-    if (!_TryCleanupCliOptions(cliOptions))
+    if (!this._TryCleanupCliOptions(cliOptions))
       return false;
 
-    if (!_TryCreateMarkdown2PdfOptions(cliOptions, out options))
+    if (!this._TryCreateMarkdown2PdfOptions(cliOptions, out options))
       return false;
 
     return true;
   }
 
-  private static bool _TryCleanupCliOptions(Options options) {
-    if (options.InputPath == null)
+  private bool _TryCleanupCliOptions(Options options) {
+    if (options.InputPath == null) {
+      this._DisplayHelp("The input path is required.");
       return false;
+    }
 
     options.OutputPath ??= Path.ChangeExtension(options.InputPath, "pdf");
     // var currentDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "node_modules");
@@ -54,15 +57,19 @@ internal class CommandLineHelper(string[] args) {
     };
 
     if (cliOptions.HeaderPath != null) {
-      if (!File.Exists(cliOptions.HeaderPath))
-        throw new Exception($"The file '{cliOptions.HeaderPath}' doesn't exist!");
+      if (!File.Exists(cliOptions.HeaderPath)) {
+        this._DisplayHelp($"The file '{cliOptions.HeaderPath}' doesn't exist!");
+        return false;
+      }
 
       options.HeaderHtml = File.ReadAllText(cliOptions.HeaderPath);
     }
 
     if (cliOptions.FooterPath != null) {
-      if (!File.Exists(cliOptions.FooterPath))
-        throw new Exception($"The file '{cliOptions.FooterPath}' doesn't exist!");
+      if (!File.Exists(cliOptions.FooterPath)) {
+        this._DisplayHelp($"The file '{cliOptions.FooterPath}' doesn't exist!");
+        return false;
+      }
 
       options.FooterHtml = File.ReadAllText(cliOptions.FooterPath);
     }
@@ -106,13 +113,24 @@ internal class CommandLineHelper(string[] args) {
     return true;
   }
 
-  private static void _DisplayHelp<T>(ParserResult<T> result, IEnumerable<Error> errors) {
+  private void _DisplayHelp(string? errorMessage = null) {
+    var result = this._parserResult!;
+
     var helpText = HelpText.AutoBuild(result, h => {
       _ = HelpText.DefaultParsingErrorsHandler(result, h);
-      h.AddEnumValuesToHelpText = true;
-      h.AddDashesToOption = true;
       return h;
     }, e => e, verbsIndex: true);
+
+    if (errorMessage != null)
+      helpText.AddPreOptionsText($"ERROR(S):{Environment.NewLine}\t{errorMessage}");
+
+    var appName = Assembly.GetExecutingAssembly().GetName().Name;
+    helpText.AddEnumValuesToHelpText = true;
+    helpText.AddDashesToOption = true;
+    helpText.Copyright = string.Empty;
+    helpText.Heading = new HeadingInfo(appName, Assembly.GetExecutingAssembly().GetName().Version!.ToString(3));
+
+    helpText.AddPreOptionsText($"Usage: {appName} <input-path> [output-path] [options]");
 
     System.Console.WriteLine(helpText);
   }
@@ -122,7 +140,7 @@ internal class CommandLineHelper(string[] args) {
     BindingFlags.Static | BindingFlags.Public | BindingFlags.IgnoreCase);
 
     if (property == null) {
-      _DisplayHelp(this._parserResult!, this._parserResult!.Errors);
+      this._DisplayHelp($"'{propertyName}' is not a valid value for this option.");
       propertyValue = default!;
       return false;
     }

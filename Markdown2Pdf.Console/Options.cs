@@ -22,7 +22,7 @@ internal class Options {
   [Option('m', "margin-options", HelpText = "(Default: 50px) Css-Margins for the content in the pdf to generate. Values must be comma-separated.")]
   public MarginOptions? MarginOptions { get; set; } = new("50px");
 
-  [Option('c', "chrome-path", HelpText = "Path to chrome or chromium executable or self-downloads it if null.")]
+  [Option('c', "chrome-path", HelpText = "Path to chrome or chromium executable. Downloads it by itself if not set.")]
   public string? ChromePath { get; set; }
 
   [Option('k', "keep-html", HelpText = "If this is set, the temporary html file does not get deleted.")]

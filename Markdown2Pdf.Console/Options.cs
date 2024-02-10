@@ -54,13 +54,10 @@ internal class Options {
   [Option('s', "scale", HelpText = "(Default: 1) Scale of the content. Must be between 0.1 and 2.")]
   public decimal Scale { get; set; } = 1;
 
-  // TODO: test
-  // TODO: maybe make this a verb
   [Option("toc", Default = null, HelpText = "If set, Creates a TOC out of the markdown headers " +
     "and writes it into a <!--TOC--> comment within the markdown document.")]
   public TableOfContentsType? TableOfContents { get; set; }
 
-  // TODO: test
   [Option("toc-max-depth", Default = 3, HelpText = "The maximum depth of the table of contents. " +
     "Requires --toc to be set.")]
   public int TableOfContentsMaxDepth { get; set; }

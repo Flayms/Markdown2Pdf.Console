@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>md2pdf-console.ico</ApplicationIcon>
+		<AssemblyName>md2pdf</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

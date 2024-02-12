@@ -13,12 +13,12 @@ Command-line application for converting Markdown to Pdf, using [Markdown2Pdf](ht
 
 Convert a Markdown-File:
 ```sh
-Markdown2Pdf.Console "README.md" # Outputs README.pdf
+md2pdf "README.md" # Outputs README.pdf
 ```
 
 Open Help:
 ```sh
-Markdown2Pdf.Console --help # Display all options
+md2pdf --help # Display all options
 ```
 
 ## Options
@@ -37,8 +37,8 @@ Markdown2Pdf.Console --help # Display all options
                                  the pdf to generate. Values must be
                                  comma-separated.
 
-  -c, --chrome-path              Path to chrome or chromium executable or
-                                 self-downloads it if null.
+  -c, --chrome-path              Path to chrome or chromium executable.
+                                 Downloads it by itself if not set.
 
   -k, --keep-html                If this is set, the temporary html file does
                                  not get deleted.
@@ -57,12 +57,13 @@ Markdown2Pdf.Console --help # Display all options
                                  into the header / footer by adding the class
                                  document-title to the element.
 
-  --custom-css                   A string containing CSS to apply extra styling
+  --custom-head-content          A string containing any content valid inside a
+                                 html <head> to apply extra scripting / styling
                                  to the document.
 
   -l, --is-landscape             (Default: false) Paper orientation.
 
-  -p, --format                   (Default: A4) The paper format for the PDF.
+  --format                       (Default: A4) The paper format for the PDF.
                                  Valid values: Letter, Legal, Tabloid, Ledger,
                                  A0-A6
 

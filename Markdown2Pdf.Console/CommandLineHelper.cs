@@ -44,15 +44,14 @@ internal class CommandLineHelper(string[] args) {
     }
 
     options.OutputPath ??= Path.ChangeExtension(options.InputPath, "pdf");
-    // var currentDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "node_modules");
-
     return true;
   }
 
   private bool _TryCreateMarkdown2PdfOptions(Options cliOptions, out Markdown2PdfOptions options) {
+    var modulesDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "node_modules");
+
     options = new Markdown2PdfOptions {
-      ModuleOptions = ModuleOptions.Remote,
-      // ModuleOptions = ModuleOptions.FromLocalPath(currentDir),
+      ModuleOptions = ModuleOptions.FromLocalPath(modulesDir),
       KeepHtml = cliOptions.KeepHtml
     };
 

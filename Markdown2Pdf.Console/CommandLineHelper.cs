@@ -116,17 +116,18 @@ internal class CommandLineHelper(string[] args) {
   private void _DisplayHelp(string? errorMessage = null) {
     var result = this._parserResult!;
 
-    var helpText = HelpText.AutoBuild(result, h => {
-      _ = HelpText.DefaultParsingErrorsHandler(result, h);
-      return h;
-    }, e => e, verbsIndex: true);
+    var helpText = HelpText.AutoBuild(result,
+      onError: h => {
+        _ = HelpText.DefaultParsingErrorsHandler(result, h);
+        h.AddEnumValuesToHelpText = true;
+        h.AddDashesToOption = true;
+        return h;
+      }, onExample: e => e, verbsIndex: true);
 
     if (errorMessage != null)
       helpText.AddPreOptionsText($"ERROR(S):{Environment.NewLine}\t{errorMessage}");
 
     var appName = Assembly.GetExecutingAssembly().GetName().Name;
-    helpText.AddEnumValuesToHelpText = true;
-    helpText.AddDashesToOption = true;
     helpText.Copyright = string.Empty;
     helpText.Heading = new HeadingInfo(appName, Assembly.GetExecutingAssembly().GetName().Version!.ToString(3));
 

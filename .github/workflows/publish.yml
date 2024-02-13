@@ -59,7 +59,7 @@ jobs:
       run: bash ".github/workflows/create-release-notes.sh" "${{ github.repository }}" ${{ env.Tag_Name }} "${{ github.workspace }}\release-notes.md"
       
     - name: Show release-notes
-      run: cat "${{ github.workspace }}\release-notes.md"   
+      run: cat "${{ github.workspace }}\release-notes.md"
 
     # Create Release
     - name: Release
@@ -69,4 +69,4 @@ jobs:
         name: "${{ env.Release_Name }}"
         body_path: "${{ github.workspace }}\\release-notes.md"
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: find "./Markdown2Pdf.Console/bin" -type f -name "*.zip"
+        files: ./Markdown2Pdf.Console/bin/*.zip

@@ -11,6 +11,7 @@ declare -A SYMBOLS=(
     [docs]=📚
     [documentation]=📚
     [style]=🎨
+    [styles]=🎨
     [refactor]=🔧
     [refac]=🔧
     [perf]=⚡
@@ -32,7 +33,7 @@ for key in ${!SYMBOLS[@]}
 do
   value=${SYMBOLS[$key]}
 
-  reg="^(\w{7}\s)($key(\((\w)+\))?:)((.)+)$"
+  reg="^(\w{7}\s)($key(\((\w)+\))?!?:)((.)+)$"
   log=$(echo "$log" | sed -r "s/$reg/\1$value\2\5/")
 done
 

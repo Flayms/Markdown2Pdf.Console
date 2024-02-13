@@ -46,7 +46,7 @@ jobs:
            -p:PublishSingleFile=true \
            -p:SelfContained=true \
            /p:Version=${{ env.Version_Number }}
-         (cd "Markdown2Pdf.Console/bin/$runtime" && zip -r ./../md2pdf_$runtime.zip  ./*)
+         (cd "Markdown2Pdf.Console/bin/$runtime" && npm install && zip -r ./../md2pdf_$runtime.zip  ./*)
         done
 
     # Create Release Log

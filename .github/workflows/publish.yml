@@ -4,7 +4,7 @@ name: publish
 on: [workflow_dispatch]
 env:
   # Specifiy dotnet SDK Version
-  DOTNET_VERSION: '6.0.x'
+  DOTNET_VERSION: '8.0.x'
 
 jobs:
   ci:
@@ -35,16 +35,19 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
 
-    # Publish the project
+    # Publish and zip for all runtimes
     - name: Publish
-      run: dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" -c:Release -r:win-x64 -o:"Markdown2Pdf.Console\bin\Publish\\" -p:PublishSingleFile=true /p:Version=${{ env.Version_Number }}
-
-    # Zip the publish
-    - name: Zip windows build
-      uses: thedoctor0/zip-release@master
-      with:
-        directory: ./Markdown2Pdf.Console/bin/Publish/
-        filename: windows-build.zip
+      run: |
+       for runtime in win-x64 win-x86 linux-x64; do
+         dotnet publish ".\Markdown2Pdf.Console\Markdown2Pdf.Console.csproj" \
+           -c:Release \
+           -r:$runtime \
+           -o:"Markdown2Pdf.Console/bin/$runtime" \
+           -p:PublishSingleFile=true \
+           -p:SelfContained=true \
+           /p:Version=${{ env.Version_Number }}
+         (cd "Markdown2Pdf.Console/bin/$runtime" && zip -r ./../md2pdf_$runtime.zip  ./*)
+        done
 
     # Create Release Log
     # Need to fetch, otherwise doesn't know last commits
@@ -66,5 +69,4 @@ jobs:
         name: "${{ env.Release_Name }}"
         body_path: "${{ github.workspace }}\\release-notes.md"
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: |
-          ./Markdown2Pdf.Console/bin/Publish/windows-build.zip
+        files: find "./Markdown2Pdf.Console/bin" -type f -name "*.zip"

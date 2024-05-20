@@ -88,7 +88,7 @@ internal class OptionBinder(
     this._HandleOption(_codeHighlightThemeOption, codeHighlightThemeName => {
       options.CodeHighlightTheme = PropertyService.TryGetPropertyValue<CodeHighlightTheme>(codeHighlightThemeName, out var codeHighlightTheme)
         ? codeHighlightTheme
-        : throw new ArgumentException();
+        : throw new ArgumentException(); // TODO: better error message
     });
 
     this._HandleOption(_documentTitleOption, value => options.DocumentTitle = value);

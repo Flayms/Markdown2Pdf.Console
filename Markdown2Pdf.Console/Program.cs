@@ -10,12 +10,12 @@ if (!commandLineHelper.TryCreateOptions(out var cliOptions, out var options))
 Console.WriteLine("Converting markdown to pdf...");
 
 var converter = new Markdown2PdfConverter(options);
-await converter.Convert(Path.GetFullPath(cliOptions.InputPath!), Path.GetFullPath(cliOptions.OutputPath!));
+await converter.Convert(cliOptions.InputPath.FullName, cliOptions.OutputPath.FullName);
 
 Console.WriteLine($"Generated pdf at: {cliOptions.OutputPath}");
 
 // TODO: what if started from different directory?
 if (cliOptions.OpenAfterConversion)
-  _ = Process.Start(new ProcessStartInfo { FileName = cliOptions.OutputPath, UseShellExecute = true });
+  _ = Process.Start(new ProcessStartInfo { FileName = cliOptions.OutputPath.FullName, UseShellExecute = true });
 
 return (int)ExitCode.Success;

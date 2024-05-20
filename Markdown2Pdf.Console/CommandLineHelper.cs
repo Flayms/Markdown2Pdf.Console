@@ -1,4 +1,6 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 using Markdown2Pdf.Options;
 
 namespace Markdown2Pdf.Console;
@@ -7,11 +9,17 @@ internal class CommandLineHelper(string[] args) {
   public bool TryCreateOptions(out Options cliOptions, out Markdown2PdfOptions options) {
     options = new Markdown2PdfOptions();
     cliOptions = new Options();
+    var helpShown = false;
 
     var rootCommand = _CreateCommandLineOptions(cliOptions, options); // Assigns properties to cliOptions and options
+    var parser = new CommandLineBuilder(rootCommand)
+      .UseDefaults()
+      .UseHelp(context => helpShown = true)
+      .Build();
 
-    var result = (ExitCode)rootCommand.Invoke(args);
-    if (result != ExitCode.Success) {
+
+    var result = (ExitCode)parser.Invoke(args);
+    if (result != ExitCode.Success || helpShown) {
       cliOptions = null!;
       options = null!;
       return false;
@@ -20,17 +28,13 @@ internal class CommandLineHelper(string[] args) {
     return true;
   }
 
-  private RootCommand _CreateCommandLineOptions(Options cliOptions, Markdown2PdfOptions options) {
-    // TODO: maybe use FileInfo
-    // TODO: handle default values correctly
-    // getDefaultValue
-    var inputPathArg = new Argument<string>(
+  private static RootCommand _CreateCommandLineOptions(Options cliOptions, Markdown2PdfOptions options) {
+    var inputFileArg = new Argument<FileInfo>(
       name: "input-path",
       description: "The path to the markdown file to parse."
-      );
+    );
 
-    // TODO: maybe use FileInfo
-    var outputPathArg = new Argument<string?>(
+    var outputFileArg = new Argument<FileInfo?>(
       name: "output-path",
       description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
     ) { Arity = ArgumentArity.ZeroOrOne };
@@ -61,12 +65,10 @@ internal class CommandLineHelper(string[] args) {
     );
     var themeOption = new Option<string?>(
       aliases: ["-t"],
-      getDefaultValue: () => "github",
       description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
     );
     var codeHighlightThemeOption = new Option<string?>(
       aliases: ["--code-highlight-theme"],
-      getDefaultValue: () => "github",
       description: "The theme to use for styling the markdown code-blocks. " +
       "Valid Values: See https://github.com/Flayms/Markdown2Pdf/blob/main/Markdown2Pdf/Options/CodeHighlightTheme.cs for an overview of all themes." // TODO: switch to wiki
     );
@@ -85,19 +87,17 @@ internal class CommandLineHelper(string[] args) {
     );
     var formatOption = new Option<string?>(
       aliases: ["--format"],
-      getDefaultValue: () => "A4",
       description: "The paper format for the PDF. " +
         "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6"
     );
     var scaleOption = new Option<decimal?>(
       aliases: ["-s", "--scale"],
-      getDefaultValue: () => 1,
       description: "(Default: 1) Scale of the content. Must be between 0.1 and 2."
     );
 
-    var rootCommand = new RootCommand {
-      inputPathArg,
-      outputPathArg,
+    var rootCommand = new RootCommand("Command-line application for converting Markdown to Pdf.") {
+      inputFileArg,
+      outputFileArg,
       headerPathOption,
       footerPathOption,
       openAfterConversionOption,
@@ -113,14 +113,14 @@ internal class CommandLineHelper(string[] args) {
       scaleOption
     };
 
-    rootCommand.SetHandler((inputPath, outputPath, openAfterConversion, markdown2PdfOptions) => {
-      cliOptions.InputPath = inputPath;
-      cliOptions.OutputPath = outputPath ?? Path.ChangeExtension(inputPath, "pdf");
+    rootCommand.SetHandler((inputFile, outputFile, openAfterConversion, markdown2PdfOptions) => {
+      cliOptions.InputPath = inputFile;
+      cliOptions.OutputPath = outputFile ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf"));
       cliOptions.OpenAfterConversion = openAfterConversion;
       options = markdown2PdfOptions;
     },
-    inputPathArg,
-    outputPathArg,
+    inputFileArg,
+    outputFileArg,
     openAfterConversionOption,
     new OptionBinder(
       headerPathOption,

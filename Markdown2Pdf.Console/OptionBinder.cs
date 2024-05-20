@@ -10,11 +10,13 @@ internal class OptionBinder(
   Option<string?> headerPathOption,
   Option<string?> footerPathOption,
   Option<MarginOptions?> marginOptionsOption,
+  Option<string?> metadataTitle,
   Option<string?> chromePathOption,
   Option<bool?> keepHtmlOption,
   Option<string?> themeOption,
   Option<string?> codeHighlightThemeOption,
   Option<string?> documentTitleOption,
+  Option<bool?> enableAutoLanguageDetectionOption,
   Option<string?> customHeadContentOption,
   Option<bool?> isLandscapeOption,
   Option<string?> formatOption,  
@@ -25,11 +27,13 @@ internal class OptionBinder(
   private readonly Option<string?> _headerPathOption = headerPathOption;
   private readonly Option<string?> _footerPathOption = footerPathOption;
   private readonly Option<MarginOptions?> _marginOptionsOption = marginOptionsOption;
+  private readonly Option<string?> _metadataTitle = metadataTitle;
   private readonly Option<string?> _chromePathOption = chromePathOption;
   private readonly Option<bool?> _keepHtmlOption = keepHtmlOption;
   private readonly Option<string?> _themeOption = themeOption;
   private readonly Option<string?> _codeHighlightThemeOption = codeHighlightThemeOption;
   private readonly Option<string?> _documentTitleOption = documentTitleOption;
+  private readonly Option<bool?> _enableAutoLanguageDetectionOption = enableAutoLanguageDetectionOption;
   private readonly Option<string?> _customHeadContentOption = customHeadContentOption;
   private readonly Option<bool?> _isLandscapeOption = isLandscapeOption;
   private readonly Option<string?> _formatOption = formatOption;
@@ -78,6 +82,7 @@ internal class OptionBinder(
       };
     });
 
+    this._HandleOption(_metadataTitle, value => options.MetadataTitle = value);
     this._HandleOption(_chromePathOption, value => options.ChromePath = value);
     this._HandleOption(_keepHtmlOption, value => options.KeepHtml = value!.Value);
     this._HandleOption(_themeOption, value => {
@@ -92,6 +97,7 @@ internal class OptionBinder(
     });
 
     this._HandleOption(_documentTitleOption, value => options.DocumentTitle = value);
+    this._HandleOption(_enableAutoLanguageDetectionOption, value => options.EnableAutoLanguageDetection = value!.Value);
     this._HandleOption(_customHeadContentOption, value => options.CustomHeadContent = value);
     this._HandleOption(_isLandscapeOption, value => options.IsLandscape = value!.Value);
     this._HandleOption(_formatOption, value => {

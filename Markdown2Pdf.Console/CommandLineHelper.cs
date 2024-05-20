@@ -28,6 +28,7 @@ internal class CommandLineHelper(string[] args) {
     return true;
   }
 
+  // TODO: from yaml
   private static RootCommand _CreateCommandLineOptions(Options cliOptions, Markdown2PdfOptions options) {
     var inputFileArg = new Argument<FileInfo>(
       name: "input-path",
@@ -39,61 +40,69 @@ internal class CommandLineHelper(string[] args) {
       description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
     ) { Arity = ArgumentArity.ZeroOrOne };
 
-    var headerPathOption = new Option<string?>(
-      aliases: ["-h", "--header-path"],
-      description: "Path to an html-file to use as the document-header."
-    );
-    var footerPathOption = new Option<string?>(
-      aliases: ["-f", "--footer-path"],
-      description: "Path to an html-file to use as the document-footer."
-    );
-    var openAfterConversionOption = new Option<bool>(
-      aliases: ["-o", "--open-after-conversion"],
-      description: "If enabled, opens the generated pdf after execution."
-    );
-    var marginOptionsOption = new Option<MarginOptions?>(
-      aliases: ["-m", "--margin-options"],
-      description: "(Default: 50px) Css-Margins for the content in the pdf to generate. Values must be comma-separated."
-    );
     var chromePathOption = new Option<string?>(
       aliases: ["-c", "--chrome-path"],
       description: "Path to chrome or chromium executable. Downloads it by itself if not set."
     );
-    var keepHtmlOption = new Option<bool?>(
-      aliases: ["-k", "--keep-html"],
-      description: "If this is set, the temporary html file does not get deleted."
-    );
-    var themeOption = new Option<string?>(
-      aliases: ["-t"],
-      description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
-    );
     var codeHighlightThemeOption = new Option<string?>(
       aliases: ["--code-highlight-theme"],
       description: "The theme to use for styling the markdown code-blocks. " +
-      "Valid Values: See https://github.com/Flayms/Markdown2Pdf/blob/main/Markdown2Pdf/Options/CodeHighlightTheme.cs for an overview of all themes." // TODO: switch to wiki
+      "Valid Values: See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes." // TODO: switch to wiki
+    );
+    var customHeadContentOption = new Option<string?>(
+      aliases: ["--custom-head-content"],
+      description: "A string containing any content valid inside a html <head> to apply extra scripting / styling to the document."
     );
     var documentTitleOption = new Option<string?>(
       aliases: ["--document-title"],
       description: "The title of this document. " +
       "Can be injected into the header / footer by adding the class document-title to the element."
     );
-    var customHeadContentOption = new Option<string?>(
-      aliases: ["--custom-head-content"],
-      description: "A string containing any content valid inside a html <head> to apply extra scripting / styling to the document."
+    var enableAutoLanguageDetectionOption = new Option<bool?>(
+      aliases: ["--enable-auto-language-detection"],
+      description: "Auto detect the language for code blocks without specfied language."
+    );
+    var footerPathOption = new Option<string?>(
+      aliases: ["-f", "--footer-path"],
+      description: "Path to an html-file to use as the document-footer."
+    );
+    var formatOption = new Option<string?>(
+      aliases: ["--format"],
+      description: "The paper format for the PDF. " +
+      "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6"
+    );
+    var headerPathOption = new Option<string?>(
+      aliases: ["-h", "--header-path"],
+      description: "Path to an html-file to use as the document-header."
     );
     var isLandscapeOption = new Option<bool?>(
       aliases: ["-l", "--is-landscape"],
       description: "Paper orientation."
     );
-    var formatOption = new Option<string?>(
-      aliases: ["--format"],
-      description: "The paper format for the PDF. " +
-        "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6"
+    var keepHtmlOption = new Option<bool?>(
+      aliases: ["-k", "--keep-html"],
+      description: "If this is set, the temporary html file does not get deleted."
+    );
+    var marginOptionsOption = new Option<MarginOptions?>(
+      aliases: ["-m", "--margins"],
+      description: "Css-Margins for the content in the pdf to generate. Values must be comma-separated."
+    );
+    var metadataTitleOption = new Option<string?>(
+      aliases: ["--metadata-title"],
+      description: "The title of the document. Can be injected into the header / footer by adding the class document-title to the element."
+    );
+    var openAfterConversionOption = new Option<bool>(
+      aliases: ["-o", "--open-after-conversion"],
+      description: "If enabled, opens the generated pdf after execution."
     );
     var scaleOption = new Option<decimal?>(
       aliases: ["-s", "--scale"],
-      description: "(Default: 1) Scale of the content. Must be between 0.1 and 2."
+      description: "Scale of the content. Must be between 0.1 and 2."
     );
+    var themeOption = new Option<string?>(
+      aliases: ["-t", "--theme"],
+      description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
+    );     
 
     var rootCommand = new RootCommand("Command-line application for converting Markdown to Pdf.") {
       inputFileArg,
@@ -126,11 +135,13 @@ internal class CommandLineHelper(string[] args) {
       headerPathOption,
       footerPathOption,
       marginOptionsOption,
+      metadataTitleOption,
       chromePathOption,
       keepHtmlOption,
       themeOption,
       codeHighlightThemeOption,
       documentTitleOption,
+      enableAutoLanguageDetectionOption,
       customHeadContentOption,
       isLandscapeOption,
       formatOption,

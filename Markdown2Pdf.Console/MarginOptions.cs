@@ -1,6 +1,4 @@
-using CommandLine;
-
-namespace Markdown2Pdf.Console;
+﻿namespace Markdown2Pdf.Console;
 public class MarginOptions {
 
   // TODO: solve better
@@ -35,15 +33,8 @@ public class MarginOptions {
     }
   }
 
-  [Option]
   public string? Top { get; set; }
-
-  [Option]
   public string? Right { get; set; }
-
-  [Option]
   public string? Bottom { get; set; }
-
-  [Option]
   public string? Left { get; set; }
 }

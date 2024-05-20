@@ -5,7 +5,7 @@ using Markdown2Pdf.Console;
 var commandLineHelper = new CommandLineHelper(args);
 
 if (!commandLineHelper.TryCreateOptions(out var cliOptions, out var options))
-  return (int)ExitCodes.Error;
+  return (int)ExitCode.Error;
 
 Console.WriteLine("Converting markdown to pdf...");
 
@@ -18,4 +18,4 @@ Console.WriteLine($"Generated pdf at: {cliOptions.OutputPath}");
 if (cliOptions.OpenAfterConversion)
   _ = Process.Start(new ProcessStartInfo { FileName = cliOptions.OutputPath, UseShellExecute = true });
 
-return (int)ExitCodes.Success;
+return (int)ExitCode.Success;

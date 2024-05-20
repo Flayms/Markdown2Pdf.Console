@@ -1,152 +1,143 @@
-﻿using System.Reflection;
-using CommandLine;
-using CommandLine.Text;
+﻿using System.CommandLine;
 using Markdown2Pdf.Options;
-using PuppeteerSharp.Media;
 
 namespace Markdown2Pdf.Console;
 internal class CommandLineHelper(string[] args) {
 
-  private readonly string[] _args = args;
-  private ParserResult<Options>? _parserResult;
-
   public bool TryCreateOptions(out Options cliOptions, out Markdown2PdfOptions options) {
-    options = null!;
+    options = new Markdown2PdfOptions();
+    cliOptions = new Options();
 
-    var parser = new Parser(settings => {
-      settings.CaseInsensitiveEnumValues = true;
-      settings.CaseSensitive = false;
-      settings.HelpWriter = null;
-      settings.AutoVersion = true;
-    });
+    var rootCommand = _CreateCommandLineOptions(cliOptions, options); // Assigns properties to cliOptions and options
 
-    var result = this._parserResult = parser.ParseArguments<Options>(this._args);
-    cliOptions = result.Value;
-
-    if (result.Tag == ParserResultType.NotParsed) {
-      this._DisplayHelp();
+    var result = (ExitCode)rootCommand.Invoke(args);
+    if (result != ExitCode.Success) {
+      cliOptions = null!;
+      options = null!;
       return false;
     }
-
-    if (!this._TryCleanupCliOptions(cliOptions))
-      return false;
-
-    if (!this._TryCreateMarkdown2PdfOptions(cliOptions, out options))
-      return false;
 
     return true;
   }
 
-  private bool _TryCleanupCliOptions(Options options) {
-    if (options.InputPath == null) {
-      this._DisplayHelp("The input path is required.");
-      return false;
-    }
+  private RootCommand _CreateCommandLineOptions(Options cliOptions, Markdown2PdfOptions options) {
+    // TODO: maybe use FileInfo
+    // TODO: handle default values correctly
+    // getDefaultValue
+    var inputPathArg = new Argument<string>(
+      name: "input-path",
+      description: "The path to the markdown file to parse."
+      );
 
-    options.OutputPath ??= Path.ChangeExtension(options.InputPath, "pdf");
-    return true;
-  }
+    // TODO: maybe use FileInfo
+    var outputPathArg = new Argument<string?>(
+      name: "output-path",
+      description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
+    ) { Arity = ArgumentArity.ZeroOrOne };
 
-  private bool _TryCreateMarkdown2PdfOptions(Options cliOptions, out Markdown2PdfOptions options) {
-    var modulesDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "node_modules");
+    var headerPathOption = new Option<string?>(
+      aliases: ["-h", "--header-path"],
+      description: "Path to an html-file to use as the document-header."
+    );
+    var footerPathOption = new Option<string?>(
+      aliases: ["-f", "--footer-path"],
+      description: "Path to an html-file to use as the document-footer."
+    );
+    var openAfterConversionOption = new Option<bool>(
+      aliases: ["-o", "--open-after-conversion"],
+      description: "If enabled, opens the generated pdf after execution."
+    );
+    var marginOptionsOption = new Option<MarginOptions?>(
+      aliases: ["-m", "--margin-options"],
+      description: "(Default: 50px) Css-Margins for the content in the pdf to generate. Values must be comma-separated."
+    );
+    var chromePathOption = new Option<string?>(
+      aliases: ["-c", "--chrome-path"],
+      description: "Path to chrome or chromium executable. Downloads it by itself if not set."
+    );
+    var keepHtmlOption = new Option<bool?>(
+      aliases: ["-k", "--keep-html"],
+      description: "If this is set, the temporary html file does not get deleted."
+    );
+    var themeOption = new Option<string?>(
+      aliases: ["-t"],
+      getDefaultValue: () => "github",
+      description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
+    );
+    var codeHighlightThemeOption = new Option<string?>(
+      aliases: ["--code-highlight-theme"],
+      getDefaultValue: () => "github",
+      description: "The theme to use for styling the markdown code-blocks. " +
+      "Valid Values: See https://github.com/Flayms/Markdown2Pdf/blob/main/Markdown2Pdf/Options/CodeHighlightTheme.cs for an overview of all themes." // TODO: switch to wiki
+    );
+    var documentTitleOption = new Option<string?>(
+      aliases: ["--document-title"],
+      description: "The title of this document. " +
+      "Can be injected into the header / footer by adding the class document-title to the element."
+    );
+    var customHeadContentOption = new Option<string?>(
+      aliases: ["--custom-head-content"],
+      description: "A string containing any content valid inside a html <head> to apply extra scripting / styling to the document."
+    );
+    var isLandscapeOption = new Option<bool?>(
+      aliases: ["-l", "--is-landscape"],
+      description: "Paper orientation."
+    );
+    var formatOption = new Option<string?>(
+      aliases: ["--format"],
+      getDefaultValue: () => "A4",
+      description: "The paper format for the PDF. " +
+        "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6"
+    );
+    var scaleOption = new Option<decimal?>(
+      aliases: ["-s", "--scale"],
+      getDefaultValue: () => 1,
+      description: "(Default: 1) Scale of the content. Must be between 0.1 and 2."
+    );
 
-    options = new Markdown2PdfOptions {
-      ModuleOptions = ModuleOptions.FromLocalPath(modulesDir),
-      KeepHtml = cliOptions.KeepHtml
+    var rootCommand = new RootCommand {
+      inputPathArg,
+      outputPathArg,
+      headerPathOption,
+      footerPathOption,
+      openAfterConversionOption,
+      marginOptionsOption,
+      chromePathOption,
+      keepHtmlOption,
+      themeOption,
+      codeHighlightThemeOption,
+      documentTitleOption,
+      customHeadContentOption,
+      isLandscapeOption,
+      formatOption,
+      scaleOption
     };
 
-    if (cliOptions.HeaderPath != null) {
-      if (!File.Exists(cliOptions.HeaderPath)) {
-        this._DisplayHelp($"The file '{cliOptions.HeaderPath}' doesn't exist!");
-        return false;
-      }
+    rootCommand.SetHandler((inputPath, outputPath, openAfterConversion, markdown2PdfOptions) => {
+      cliOptions.InputPath = inputPath;
+      cliOptions.OutputPath = outputPath ?? Path.ChangeExtension(inputPath, "pdf");
+      cliOptions.OpenAfterConversion = openAfterConversion;
+      options = markdown2PdfOptions;
+    },
+    inputPathArg,
+    outputPathArg,
+    openAfterConversionOption,
+    new OptionBinder(
+      headerPathOption,
+      footerPathOption,
+      marginOptionsOption,
+      chromePathOption,
+      keepHtmlOption,
+      themeOption,
+      codeHighlightThemeOption,
+      documentTitleOption,
+      customHeadContentOption,
+      isLandscapeOption,
+      formatOption,
+      scaleOption
+      ));
 
-      options.HeaderHtml = File.ReadAllText(cliOptions.HeaderPath);
-    }
-
-    if (cliOptions.FooterPath != null) {
-      if (!File.Exists(cliOptions.FooterPath)) {
-        this._DisplayHelp($"The file '{cliOptions.FooterPath}' doesn't exist!");
-        return false;
-      }
-
-      options.FooterHtml = File.ReadAllText(cliOptions.FooterPath);
-    }
-
-    var marginOptions = cliOptions.MarginOptions;
-    if (marginOptions != null) {
-      options.MarginOptions = new Markdown2Pdf.Options.MarginOptions {
-        Top = marginOptions.Top,
-        Bottom = marginOptions.Bottom,
-        Left = marginOptions.Left,
-        Right = marginOptions.Right
-      };
-    }
-
-    options.Theme = cliOptions.Theme.ToLower() switch {
-      "github" => Theme.Github,
-      "latex" => Theme.Latex,
-      "" => Theme.None,
-      _ => Theme.Custom(cliOptions.Theme),
-    };
-
-    if (!this._TryGetPropertyValue<CodeHighlightTheme>(cliOptions.CodeHighlightTheme, out var codeHighlightTheme))
-      return false;
-
-    options.CodeHighlightTheme = codeHighlightTheme;
-    options.DocumentTitle = cliOptions.DocumentTitle;
-    options.CustomHeadContent = cliOptions.CustomHeadContent;
-    options.IsLandscape = cliOptions.IsLandscape;
-
-    if (!this._TryGetPropertyValue<PaperFormat>(cliOptions.Format, out var paperFormat))
-      return false;
-
-    options.Format = paperFormat;
-    options.Scale = cliOptions.Scale;
-
-    if (cliOptions.TableOfContents != null) {
-      var isOrdered = cliOptions.TableOfContents == TableOfContentsType.Ordered;
-      options.TableOfContents = new TableOfContents(isOrdered, cliOptions.TableOfContentsMaxDepth);
-    }
-
-    return true;
-  }
-
-  private void _DisplayHelp(string? errorMessage = null) {
-    var result = this._parserResult!;
-
-    var helpText = HelpText.AutoBuild(result,
-      onError: h => {
-        _ = HelpText.DefaultParsingErrorsHandler(result, h);
-        h.AddEnumValuesToHelpText = true;
-        h.AddDashesToOption = true;
-        return h;
-      }, onExample: e => e, verbsIndex: true);
-
-    if (errorMessage != null)
-      helpText.AddPreOptionsText($"ERROR(S):{Environment.NewLine}\t{errorMessage}");
-
-    var appName = Assembly.GetExecutingAssembly().GetName().Name;
-    helpText.Copyright = string.Empty;
-    helpText.Heading = new HeadingInfo(appName, Assembly.GetExecutingAssembly().GetName().Version!.ToString(3));
-
-    helpText.AddPreOptionsText($"Usage: {appName} <input-path> [output-path] [options]");
-
-    System.Console.WriteLine(helpText);
-  }
-
-  private bool _TryGetPropertyValue<T>(string propertyName, out T propertyValue) {
-    var property = typeof(T).GetProperty(propertyName,
-    BindingFlags.Static | BindingFlags.Public | BindingFlags.IgnoreCase);
-
-    if (property == null) {
-      this._DisplayHelp($"'{propertyName}' is not a valid value for this option.");
-      propertyValue = default!;
-      return false;
-    }
-
-    propertyValue = (T)property.GetValue(null, null)!;
-    return true;
+    return rootCommand;
   }
 
 }

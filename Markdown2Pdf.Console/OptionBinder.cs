@@ -58,23 +58,9 @@ internal class OptionBinder(
       ModuleOptions = ModuleOptions.FromLocalPath(modulesDir)
     };
 
-    var headerPath = parseResult.GetValueForOption(_headerPathOption);
-    if (headerPath != null) {
-      if (!File.Exists(headerPath)) {
-        throw new ArgumentException();
-      }
+    this._HandleOption(_headerPathOption, value => options.HeaderHtml = File.ReadAllText(value));
+    this._HandleOption(_footerPathOption, value => options.FooterHtml = File.ReadAllText(value));
 
-      options.HeaderHtml = File.ReadAllText(headerPath);
-    }
-
-    var footerPath = parseResult.GetValueForOption(_footerPathOption);
-    if (footerPath != null) {
-      if (!File.Exists(footerPath)) {
-        throw new ArgumentException();
-      }
-
-      options.FooterHtml = File.ReadAllText(footerPath);
-    }
 
     this._HandleOption(_marginOptionsOption, value => {
       options.MarginOptions = new Markdown2Pdf.Options.MarginOptions() {

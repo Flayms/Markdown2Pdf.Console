@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using System.Reflection;
 using Markdown2Pdf.Options;
 
 namespace Markdown2Pdf.Console;
@@ -9,7 +10,7 @@ internal class CommandLineHelper(string[] args) {
   public delegate Task<ExitCode> Handler(Options cliOptions, Markdown2PdfOptions options);
 
   public async Task<ExitCode> Run(Handler handler) {
-    var rootCommand = _CreateCommandLineOptions(handler); // Assigns properties to cliOptions and options
+    var rootCommand = _CreateCommand(handler);
     var parser = new CommandLineBuilder(rootCommand)
       .UseDefaults()
       .Build();
@@ -18,7 +19,7 @@ internal class CommandLineHelper(string[] args) {
   }
 
   // TODO: from yaml
-  private static RootCommand _CreateCommandLineOptions(Handler handler) {
+  private static RootCommand _CreateCommand(Handler handler) {
     var inputFileArg = new Argument<FileInfo>(
       name: "input-path",
       description: "The path to the markdown file to parse."
@@ -41,9 +42,12 @@ internal class CommandLineHelper(string[] args) {
       description: "The theme to use for styling the markdown code-blocks. " +
       "Valid Values: See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes." // TODO: switch to wiki
     );
+    codeHighlightThemeOption.FromAmong(GetAllPublicPropertyNames<CodeHighlightTheme>());
+    codeHighlightThemeOption.ArgumentHelpName = "code-highlight-theme";
+
     var customHeadContentOption = new Option<string?>(
       aliases: ["--custom-head-content"],
-      description: "A string containing any content valid inside a html <head> to apply extra scripting / styling to the document."
+      description: "A string containing any content valid inside an html <head> to apply extra scripting / styling to the document."
     );
     var documentTitleOption = new Option<string?>(
       aliases: ["--document-title"],
@@ -58,6 +62,7 @@ internal class CommandLineHelper(string[] args) {
       aliases: ["-f", "--footer-path"],
       description: "Path to an html-file to use as the document-footer."
     );
+    footerPathOption.AddValidator(_ValidateFilePath);
     var formatOption = new Option<string?>(
       aliases: ["--format"],
       description: "The paper format for the PDF. " +
@@ -67,6 +72,7 @@ internal class CommandLineHelper(string[] args) {
       aliases: ["-h", "--header-path"],
       description: "Path to an html-file to use as the document-header."
     );
+   headerPathOption.AddValidator(_ValidateFilePath);
     var isLandscapeOption = new Option<bool?>(
       aliases: ["-l", "--is-landscape"],
       description: "Paper orientation."
@@ -160,6 +166,10 @@ internal class CommandLineHelper(string[] args) {
     var fullPath = Path.GetFullPath(filePath);
     if (!File.Exists(fullPath))
       result.ErrorMessage = $"File '{fullPath}' does not exist.";
+  }
+
+  private static string[] GetAllPublicPropertyNames<T>() {
+    return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Static).Select(p => p.Name).ToArray();
   }
 
 }

@@ -6,44 +6,36 @@ using Markdown2Pdf.Options;
 namespace Markdown2Pdf.Console;
 internal class CommandLineHelper(string[] args) {
 
-  public bool TryCreateOptions(out Options cliOptions, out Markdown2PdfOptions options) {
-    options = new Markdown2PdfOptions();
-    cliOptions = new Options();
-    var helpShown = false;
+  public delegate Task<ExitCode> Handler(Options cliOptions, Markdown2PdfOptions options);
 
-    var rootCommand = _CreateCommandLineOptions(cliOptions, options); // Assigns properties to cliOptions and options
+  public async Task<ExitCode> Run(Handler handler) {
+    var rootCommand = _CreateCommandLineOptions(handler); // Assigns properties to cliOptions and options
     var parser = new CommandLineBuilder(rootCommand)
       .UseDefaults()
-      .UseHelp(context => helpShown = true)
       .Build();
 
-
-    var result = (ExitCode)parser.Invoke(args);
-    if (result != ExitCode.Success || helpShown) {
-      cliOptions = null!;
-      options = null!;
-      return false;
-    }
-
-    return true;
+    return (ExitCode) await parser.InvokeAsync(args);
   }
 
   // TODO: from yaml
-  private static RootCommand _CreateCommandLineOptions(Options cliOptions, Markdown2PdfOptions options) {
+  private static RootCommand _CreateCommandLineOptions(Handler handler) {
     var inputFileArg = new Argument<FileInfo>(
       name: "input-path",
       description: "The path to the markdown file to parse."
     );
+    inputFileArg.AddValidator(_ValidateFileInfo);
 
     var outputFileArg = new Argument<FileInfo?>(
       name: "output-path",
       description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
     ) { Arity = ArgumentArity.ZeroOrOne };
+    outputFileArg.AddValidator(_ValidateFileInfo);
 
     var chromePathOption = new Option<string?>(
       aliases: ["-c", "--chrome-path"],
       description: "Path to chrome or chromium executable. Downloads it by itself if not set."
     );
+    chromePathOption.AddValidator(_ValidateFilePath);
     var codeHighlightThemeOption = new Option<string?>(
       aliases: ["--code-highlight-theme"],
       description: "The theme to use for styling the markdown code-blocks. " +
@@ -102,7 +94,7 @@ internal class CommandLineHelper(string[] args) {
     var themeOption = new Option<string?>(
       aliases: ["-t", "--theme"],
       description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
-    );     
+    );
 
     var rootCommand = new RootCommand("Command-line application for converting Markdown to Pdf.") {
       inputFileArg,
@@ -122,33 +114,52 @@ internal class CommandLineHelper(string[] args) {
       scaleOption
     };
 
-    rootCommand.SetHandler((inputFile, outputFile, openAfterConversion, markdown2PdfOptions) => {
-      cliOptions.InputPath = inputFile;
-      cliOptions.OutputPath = outputFile ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf"));
-      cliOptions.OpenAfterConversion = openAfterConversion;
-      options = markdown2PdfOptions;
-    },
-    inputFileArg,
-    outputFileArg,
-    openAfterConversionOption,
-    new OptionBinder(
-      headerPathOption,
-      footerPathOption,
-      marginOptionsOption,
-      metadataTitleOption,
-      chromePathOption,
-      keepHtmlOption,
-      themeOption,
-      codeHighlightThemeOption,
-      documentTitleOption,
-      enableAutoLanguageDetectionOption,
-      customHeadContentOption,
-      isLandscapeOption,
-      formatOption,
-      scaleOption
-      ));
+    rootCommand.SetHandler(async (context) => {
+      var parseResult = context.ParseResult;
+      var inputFile = parseResult.GetValueForArgument(inputFileArg);
+      var cliOptions = new Options {
+        InputFile = inputFile,
+        OutputFile = parseResult.GetValueForArgument(outputFileArg) ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf")),
+        OpenAfterConversion = parseResult.GetValueForOption(openAfterConversionOption)
+      };
+
+      var binder = new OptionBinder(
+        headerPathOption,
+        footerPathOption,
+        marginOptionsOption,
+        metadataTitleOption,
+        chromePathOption,
+        keepHtmlOption,
+        themeOption,
+        codeHighlightThemeOption,
+        documentTitleOption,
+        enableAutoLanguageDetectionOption,
+        customHeadContentOption,
+        isLandscapeOption,
+        formatOption,
+        scaleOption
+       );
+
+      var options = binder.GetValue(context.BindingContext);
+      var result = await handler(cliOptions, options); // Runs actual logic here
+
+      context.ExitCode = (int)result;
+    });
 
     return rootCommand;
+  }
+
+  private static void _ValidateFileInfo(ArgumentResult result) {
+    var file = result.GetValueOrDefault<FileInfo>();
+    if (!file.Exists)
+      result.ErrorMessage = $"File '{file.FullName}' does not exist.";
+  }
+
+  private static void _ValidateFilePath(OptionResult result) {
+    var filePath = result.GetValueOrDefault<string>()!;
+    var fullPath = Path.GetFullPath(filePath);
+    if (!File.Exists(fullPath))
+      result.ErrorMessage = $"File '{fullPath}' does not exist.";
   }
 
 }

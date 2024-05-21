@@ -27,7 +27,7 @@ internal class OptionBinder(
   private readonly Option<string?> _headerPathOption = headerPathOption;
   private readonly Option<string?> _footerPathOption = footerPathOption;
   private readonly Option<MarginOptions?> _marginOptionsOption = marginOptionsOption;
-  private readonly Option<string?> _metadataTitle = metadataTitle;
+  private readonly Option<string?> _metadataTitleOption = metadataTitle;
   private readonly Option<string?> _chromePathOption = chromePathOption;
   private readonly Option<bool?> _keepHtmlOption = keepHtmlOption;
   private readonly Option<string?> _themeOption = themeOption;
@@ -43,9 +43,12 @@ internal class OptionBinder(
 
   private void _HandleOption<T>(Option<T?> option, Action<T> setter) {
     var value = this._parseResult!.GetValueForOption(option);
+
     if (value != null)
-      setter.Invoke(this._parseResult.GetValueForOption(option)!); 
+      setter.Invoke(this._parseResult.GetValueForOption(option)!);
   }
+
+  public Markdown2PdfOptions GetValue(BindingContext bindingContext) => this.GetBoundValue(bindingContext);
 
   protected override Markdown2PdfOptions GetBoundValue(BindingContext bindingContext) {
     var parseResult = this._parseResult = bindingContext.ParseResult;
@@ -82,7 +85,7 @@ internal class OptionBinder(
       };
     });
 
-    this._HandleOption(_metadataTitle, value => options.MetadataTitle = value);
+    this._HandleOption(_metadataTitleOption, value => options.MetadataTitle = value);
     this._HandleOption(_chromePathOption, value => options.ChromePath = value);
     this._HandleOption(_keepHtmlOption, value => options.KeepHtml = value!.Value);
     this._HandleOption(_themeOption, value => {

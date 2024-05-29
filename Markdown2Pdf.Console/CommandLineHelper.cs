@@ -19,30 +19,31 @@ internal class CommandLineHelper(string[] args) {
   }
 
   // TODO: from yaml
+  // TODO: maybe nullability is not needed
   private static RootCommand _CreateCommand(Handler handler) {
     var inputFileArg = new Argument<FileInfo>(
       name: "input-path",
       description: "The path to the markdown file to parse."
     );
-    inputFileArg.AddValidator(_ValidateFileInfo);
+    inputFileArg.AddValidator(Utils.ValidateFileInfo);
 
     var outputFileArg = new Argument<FileInfo?>(
       name: "output-path",
       description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
     ) { Arity = ArgumentArity.ZeroOrOne };
-    outputFileArg.AddValidator(_ValidateFileInfo);
+    outputFileArg.AddValidator(Utils.ValidateFileInfo);
 
     var chromePathOption = new Option<string?>(
       aliases: ["-c", "--chrome-path"],
       description: "Path to chrome or chromium executable. Downloads it by itself if not set."
     );
-    chromePathOption.AddValidator(_ValidateFilePath);
+    chromePathOption.AddValidator(Utils.ValidateFilePath);
     var codeHighlightThemeOption = new Option<string?>(
       aliases: ["--code-highlight-theme"],
       description: "The theme to use for styling the markdown code-blocks. " +
       "Valid Values: See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes." // TODO: switch to wiki
     );
-    codeHighlightThemeOption.FromAmong(GetAllPublicPropertyNames<CodeHighlightTheme>());
+    codeHighlightThemeOption.FromAmong(Utils.GetAllPublicPropertyNames<CodeHighlightTheme>());
     codeHighlightThemeOption.ArgumentHelpName = "code-highlight-theme";
 
     var customHeadContentOption = new Option<string?>(
@@ -62,7 +63,7 @@ internal class CommandLineHelper(string[] args) {
       aliases: ["-f", "--footer-path"],
       description: "Path to an html-file to use as the document-footer."
     );
-    footerPathOption.AddValidator(_ValidateFilePath);
+    footerPathOption.AddValidator(Utils.ValidateFilePath);
     var formatOption = new Option<string?>(
       aliases: ["--format"],
       description: "The paper format for the PDF. " +
@@ -72,7 +73,7 @@ internal class CommandLineHelper(string[] args) {
       aliases: ["-h", "--header-path"],
       description: "Path to an html-file to use as the document-header."
     );
-   headerPathOption.AddValidator(_ValidateFilePath);
+   headerPathOption.AddValidator(Utils.ValidateFilePath);
     var isLandscapeOption = new Option<bool?>(
       aliases: ["-l", "--is-landscape"],
       description: "Paper orientation."
@@ -102,6 +103,41 @@ internal class CommandLineHelper(string[] args) {
       description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
     );
 
+    var tocOption = new Option<bool?>(
+      aliases: ["--toc"],
+      description: "If set, a table of contents will ge inserted into all TOC placeholders within the document. Run \"md2pdf toc --help\" for more help") {
+    };
+
+    var tocMinDepthOption = new Option<int?>(
+      aliases: ["--toc-min-depth"],
+      description: "The minimum level of heading depth to include in the TOC (e.g. 1 will only include headings greater than or equal to <h1>). Range: 1 to 6."
+    );
+
+    var tocMaxDepthOption = new Option<int?>(
+      aliases: ["--toc-max-depth"],
+      description: "The maximum level of heading depth to include in the TOC (e.g. 3 will include headings less than or equal to <h3>). Range: 1 to 6."
+    );
+
+    var tocListStyleOption = new Option<ListStyle?>(
+      aliases: ["--toc-list-style"],
+      description: "Decides which characters to use before the TOC items."
+    );
+
+    var tocHasColoredLinksOption = new Option<bool?>(
+      aliases: ["--toc-has-colored-links"],
+      description: "Determines if the TOC links should have the default link color (instead of looking  like normal text)."
+    );
+
+    var tocPageNumberOption = new Option<bool?>(
+      aliases: ["--toc-page-numbers"],
+      description: "If set, the TOC will be generated with page numbers."
+    );
+
+    var tocPageNumberTabLeaderOption = new Option<Leader?>(
+      aliases: ["--toc-page-numbers-tab-leader"],
+      description: "The character to use to lead from the TOC title to the page number."
+    );
+
     var rootCommand = new RootCommand("Command-line application for converting Markdown to Pdf.") {
       inputFileArg,
       outputFileArg,
@@ -117,7 +153,14 @@ internal class CommandLineHelper(string[] args) {
       customHeadContentOption,
       isLandscapeOption,
       formatOption,
-      scaleOption
+      scaleOption,
+      tocOption,
+      tocMinDepthOption,
+      tocMaxDepthOption,
+      tocListStyleOption,
+      tocHasColoredLinksOption,
+      tocPageNumberOption,
+      tocPageNumberTabLeaderOption,
     };
 
     rootCommand.SetHandler(async (context) => {
@@ -143,7 +186,14 @@ internal class CommandLineHelper(string[] args) {
         customHeadContentOption,
         isLandscapeOption,
         formatOption,
-        scaleOption
+        scaleOption,
+        tocOption,
+        tocMinDepthOption,
+        tocMaxDepthOption,
+        tocListStyleOption,
+        tocHasColoredLinksOption,
+        tocPageNumberOption,
+        tocPageNumberTabLeaderOption
        );
 
       var options = binder.GetValue(context.BindingContext);
@@ -153,23 +203,6 @@ internal class CommandLineHelper(string[] args) {
     });
 
     return rootCommand;
-  }
-
-  private static void _ValidateFileInfo(ArgumentResult result) {
-    var file = result.GetValueOrDefault<FileInfo>();
-    if (!file.Exists)
-      result.ErrorMessage = $"File '{file.FullName}' does not exist.";
-  }
-
-  private static void _ValidateFilePath(OptionResult result) {
-    var filePath = result.GetValueOrDefault<string>()!;
-    var fullPath = Path.GetFullPath(filePath);
-    if (!File.Exists(fullPath))
-      result.ErrorMessage = $"File '{fullPath}' does not exist.";
-  }
-
-  private static string[] GetAllPublicPropertyNames<T>() {
-    return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Static).Select(p => p.Name).ToArray();
   }
 
 }

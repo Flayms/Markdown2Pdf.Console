@@ -87,6 +87,8 @@ internal class CommandLineHelper(string[] args) {
       aliases: ["-m", "--margins"],
       description: "Css-Margins for the content in the pdf to generate. Values must be comma-separated."
     );
+    marginOptionsOption.SetDefaultValue(new MarginOptions("50px"));
+
     var metadataTitleOption = new Option<string?>(
       aliases: ["--metadata-title"],
       description: "The title of the document. Can be injected into the header / footer by adding the class document-title to the element."
@@ -132,7 +134,7 @@ internal class CommandLineHelper(string[] args) {
     );
 
     var rootCommand = new RootCommand($"Command-line application for converting Markdown to Pdf.{Environment.NewLine}" +
-      $"Note setting any of the --toc options will cause a TOC to be generated within the placeholders.") {
+      $"Note: setting any of the --toc options will cause a TOC to be generated within the placeholders.") {
       inputFileArg,
       outputFileArg,
       headerPathOption,

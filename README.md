@@ -5,9 +5,13 @@
   <br>
 </p>
 
-Command-line application for converting Markdown to Pdf, using [Markdown2Pdf](https://github.com/Flayms/Markdown2Pdf).
+Command-line application for converting Markdown to PDF, using [Markdown2Pdf](https://github.com/Flayms/Markdown2Pdf).
 
 [TOC]
+
+## Download
+
+Download build for Windows or Linux at [Releases](https://github.com/Flayms/Markdown2Pdf.Console/releases/latest)
 
 ## Getting started
 
@@ -39,9 +43,6 @@ Arguments:
 
 ## Options
 
-> [!NOTE]  
-> Note: setting any of the --toc options will cause a TOC to be generated within the placeholders.
-
 ```
 -h, --header-path <header-path>                             Path to an html-file to use as the document-header.
 -f, --footer-path <footer-path>                             Path to an html-file to use as the document-footer.
@@ -64,6 +65,9 @@ Arguments:
 --version                                                   Show version information
 -?, -h, --help                                              Show help and usage information
 ```
+
+> [!NOTE]  
+> Note: setting any of the --toc options will cause a TOC to be generated within the placeholders.
 
 > [!TIP]
 > All the options can also be directly embedded in the Markdown with a YAML front matter block. See [Example](https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Markdown2PdfConverter#examples-1).

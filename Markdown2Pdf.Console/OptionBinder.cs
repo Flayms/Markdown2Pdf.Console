@@ -21,12 +21,10 @@ internal class OptionBinder(
   Option<bool?> isLandscapeOption,
   Option<string?> formatOption,  
   Option<decimal?> scaleOption,
-  Option<bool?> tocOption,
   Option<int?> tocMinDepthOption,
   Option<int?> tocMaxDepthOption,
   Option<ListStyle?> tocListStyleOption,
   Option<bool?> tocHasColoredLinksOption,
-  Option<bool?> tocPageNumberOption,
   Option<Leader?> tocPageNumberTabLeaderOption
   )
   : BinderBase<Markdown2PdfOptions> {
@@ -45,21 +43,12 @@ internal class OptionBinder(
   private readonly Option<bool?> _isLandscapeOption = isLandscapeOption;
   private readonly Option<string?> _formatOption = formatOption;
   private readonly Option<decimal?> _scaleOption = scaleOption;
-  private readonly Option<bool?> _tocOption = tocOption;
   private readonly Option<int?> _tocMinDepthOption = tocMinDepthOption;
   private readonly Option<int?> _tocMaxDepthOption = tocMaxDepthOption;
   private readonly Option<ListStyle?> _tocListStyleOption = tocListStyleOption;
   private readonly Option<bool?> _tocHasColoredLinksOption = tocHasColoredLinksOption;
-  private readonly Option<bool?> _tocPageNumberOption = tocPageNumberOption;
   private readonly Option<Leader?> _tocPageNumberTabLeaderOption = tocPageNumberTabLeaderOption;
   private ParseResult? _parseResult;
-
-  private void _HandleOption<T>(Option<T?> option, Action<T> setter) {
-    var value = this._parseResult!.GetValueForOption(option);
-
-    if (value != null)
-      setter.Invoke(this._parseResult.GetValueForOption(option)!);
-  }
 
   public Markdown2PdfOptions GetValue(BindingContext bindingContext) => this.GetBoundValue(bindingContext);
 
@@ -108,35 +97,27 @@ internal class OptionBinder(
         : throw new Exception(); // TODO: support
     });
     this._HandleOption(_scaleOption, value => options.Scale = value!.Value);
-
-    // toc // TODO: put into extra method
-    // var hasToc = parseResult.HasOption(_tocOption); // TODO: check for this with every sub option
-
-    var hasToc = false;
-    this._HandleOption(_tocOption, value => {
-      hasToc = value!.Value;
-      if (hasToc)
-        options.TableOfContents = new TableOfContentsOptions();
-    });
-
-    if (hasToc) {
-      this._HandleOption(_tocMinDepthOption, value => options.TableOfContents!.MinDepthLevel = value!.Value);
-      this._HandleOption(_tocMaxDepthOption, value => options.TableOfContents!.MaxDepthLevel = value!.Value);
-      this._HandleOption(_tocListStyleOption, value => options.TableOfContents!.ListStyle = value!.Value);
-      this._HandleOption(_tocHasColoredLinksOption, value => options.TableOfContents!.HasColoredLinks = value!.Value);
-
-      var hasPageNumbers = false;
-      this._HandleOption(_tocPageNumberOption, value => {
-        hasPageNumbers = value!.Value;
-        if (hasPageNumbers)
-          options.TableOfContents!.PageNumberOptions = new PageNumberOptions();
-      });
-
-      if (hasPageNumbers)
-        this._HandleOption(_tocPageNumberTabLeaderOption, value => options.TableOfContents!.PageNumberOptions!.TabLeader = value!.Value);
-    }
+    this._HandleToc(options);
 
     return options;
+  }
+
+  private void _HandleToc(Markdown2PdfOptions options) {
+    TableOfContentsOptions GetToc() => options.TableOfContents ??= new TableOfContentsOptions();
+    PageNumberOptions GetPageNumberOptions() => GetToc().PageNumberOptions ??= new PageNumberOptions();
+
+    this._HandleOption(_tocMinDepthOption, value => GetToc().MinDepthLevel = value!.Value);
+    this._HandleOption(_tocMaxDepthOption, value => GetToc().MaxDepthLevel = value!.Value);
+    this._HandleOption(_tocListStyleOption, value => GetToc().ListStyle = value!.Value);
+    this._HandleOption(_tocHasColoredLinksOption, value => GetToc().HasColoredLinks = value!.Value);
+    this._HandleOption(_tocPageNumberTabLeaderOption, value => GetPageNumberOptions().TabLeader = value!.Value);
+  }
+
+  private void _HandleOption<T>(Option<T?> option, Action<T> setter) {
+    var value = this._parseResult!.GetValueForOption(option);
+
+    if (value != null)
+      setter.Invoke(this._parseResult.GetValueForOption(option)!);
   }
 
 }

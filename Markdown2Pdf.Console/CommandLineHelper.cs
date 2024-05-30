@@ -38,6 +38,7 @@ internal class CommandLineHelper(string[] args) {
       description: "Path to chrome or chromium executable. Downloads it by itself if not set."
     );
     chromePathOption.AddValidator(Utils.ValidateFilePath);
+
     var codeHighlightThemeOption = new Option<string?>(
       aliases: ["--code-highlight-theme"],
       description: "The theme to use for styling the markdown code-blocks. " +
@@ -103,42 +104,35 @@ internal class CommandLineHelper(string[] args) {
       description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
     );
 
-    var tocOption = new Option<bool?>(
-      aliases: ["--toc"],
-      description: "If set, a table of contents will ge inserted into all TOC placeholders within the document. Run \"md2pdf toc --help\" for more help") {
-    };
+    var tocListStyleOption = new Option<ListStyle?>(
+      aliases: ["--toc-list-style"],
+      description: "Decides which characters to use before the TOC items."
+    );
 
     var tocMinDepthOption = new Option<int?>(
       aliases: ["--toc-min-depth"],
       description: "The minimum level of heading depth to include in the TOC (e.g. 1 will only include headings greater than or equal to <h1>). Range: 1 to 6."
     );
+    tocMinDepthOption.AddValidator(r => Utils.ValidateBounds(r, 1, 6));
 
     var tocMaxDepthOption = new Option<int?>(
       aliases: ["--toc-max-depth"],
       description: "The maximum level of heading depth to include in the TOC (e.g. 3 will include headings less than or equal to <h3>). Range: 1 to 6."
     );
-
-    var tocListStyleOption = new Option<ListStyle?>(
-      aliases: ["--toc-list-style"],
-      description: "Decides which characters to use before the TOC items."
-    );
+    tocMaxDepthOption.AddValidator(r => Utils.ValidateBounds(r, 1, 6));
 
     var tocHasColoredLinksOption = new Option<bool?>(
       aliases: ["--toc-has-colored-links"],
       description: "Determines if the TOC links should have the default link color (instead of looking  like normal text)."
     );
 
-    var tocPageNumberOption = new Option<bool?>(
-      aliases: ["--toc-page-numbers"],
-      description: "If set, the TOC will be generated with page numbers."
-    );
-
     var tocPageNumberTabLeaderOption = new Option<Leader?>(
       aliases: ["--toc-page-numbers-tab-leader"],
-      description: "The character to use to lead from the TOC title to the page number."
+      description: "Generate TOC Page Numbers and use the given character to lead from the TOC title to the page number."
     );
 
-    var rootCommand = new RootCommand("Command-line application for converting Markdown to Pdf.") {
+    var rootCommand = new RootCommand($"Command-line application for converting Markdown to Pdf.{Environment.NewLine}" +
+      $"Note setting any of the --toc options will cause a TOC to be generated within the placeholders.") {
       inputFileArg,
       outputFileArg,
       headerPathOption,
@@ -154,12 +148,10 @@ internal class CommandLineHelper(string[] args) {
       isLandscapeOption,
       formatOption,
       scaleOption,
-      tocOption,
       tocMinDepthOption,
       tocMaxDepthOption,
       tocListStyleOption,
       tocHasColoredLinksOption,
-      tocPageNumberOption,
       tocPageNumberTabLeaderOption,
     };
 
@@ -187,12 +179,10 @@ internal class CommandLineHelper(string[] args) {
         isLandscapeOption,
         formatOption,
         scaleOption,
-        tocOption,
         tocMinDepthOption,
         tocMaxDepthOption,
         tocListStyleOption,
         tocHasColoredLinksOption,
-        tocPageNumberOption,
         tocPageNumberTabLeaderOption
        );
 

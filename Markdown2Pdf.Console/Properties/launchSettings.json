@@ -2,7 +2,7 @@
   "profiles": {
     "MarkdownToPdf.Console": {
       "commandName": "Project",
-      "commandLineArgs": "README.md -o --toc"
+      "commandLineArgs": "README.md -o --toc-page-numbers-tab-leader=dots"
     }
   }
 }

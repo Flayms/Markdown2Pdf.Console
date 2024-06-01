@@ -7,7 +7,7 @@
 
 Command-line application for converting Markdown to PDF, using [Markdown2Pdf](https://github.com/Flayms/Markdown2Pdf).
 
-[TOC]
+<!-- TOC -->
 
 ## Download
 

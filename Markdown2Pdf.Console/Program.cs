@@ -7,12 +7,10 @@ var commandLineHelper = new CommandLineHelper(args);
 
 return (int) await commandLineHelper.Run(Handler);
 
-static async Task<ExitCode> Handler(Options cliOptions, Markdown2PdfOptions options) {
+static async Task<ExitCode> Handler(Options cliOptions, Markdown2PdfConverter converter) {
   Console.WriteLine("Converting markdown to pdf...");
 
-  var converter = new Markdown2PdfConverter(options);
   await converter.Convert(cliOptions.InputFile.FullName, cliOptions.OutputFile.FullName);
-
   Console.WriteLine($"Generated pdf at: {cliOptions.OutputFile}");
 
   // TODO: what if started from different directory?

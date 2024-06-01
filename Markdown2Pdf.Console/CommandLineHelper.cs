@@ -1,13 +1,12 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
-using System.Reflection;
 using Markdown2Pdf.Options;
 
 namespace Markdown2Pdf.Console;
 internal class CommandLineHelper(string[] args) {
 
-  public delegate Task<ExitCode> Handler(Options cliOptions, Markdown2PdfOptions options);
+  public delegate Task<ExitCode> Handler(Options cliOptions, Markdown2PdfConverter options);
 
   public async Task<ExitCode> Run(Handler handler) {
     var rootCommand = _CreateCommand(handler);
@@ -18,7 +17,6 @@ internal class CommandLineHelper(string[] args) {
     return (ExitCode) await parser.InvokeAsync(args);
   }
 
-  // TODO: from yaml
   // TODO: maybe nullability is not needed
   private static RootCommand _CreateCommand(Handler handler) {
     var inputFileArg = new Argument<FileInfo>(
@@ -32,6 +30,11 @@ internal class CommandLineHelper(string[] args) {
       description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
     ) { Arity = ArgumentArity.ZeroOrOne };
     outputFileArg.AddValidator(Utils.ValidateFileInfo);
+
+    var fromYamlOption = new Option<bool?>(
+      aliases: ["-y", "--options-from-yaml-front-matter"],
+      description: "If set, loads the options from a YAML front matter block. See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Markdown2PdfConverter#-createwithinlineoptionsfromfilestring"
+    );
 
     var chromePathOption = new Option<string?>(
       aliases: ["-c", "--chrome-path"],
@@ -137,6 +140,7 @@ internal class CommandLineHelper(string[] args) {
       $"Note: setting any of the --toc options will cause a TOC to be generated within the placeholders.") {
       inputFileArg,
       outputFileArg,
+      fromYamlOption,
       headerPathOption,
       footerPathOption,
       openAfterConversionOption,
@@ -157,6 +161,22 @@ internal class CommandLineHelper(string[] args) {
       tocPageNumberTabLeaderOption,
     };
 
+    // TODO: check if this works as intended
+    rootCommand.AddValidator(result => {
+      var yamlResult = result.Children.FirstOrDefault(s => s.Symbol == fromYamlOption);
+      if (yamlResult is null)
+        return;
+
+      foreach (var child in result.Children) {
+        // only option allowed together with yaml result is open-after-conversion
+        if (child.Symbol == openAfterConversionOption || child == yamlResult || child.Symbol is not Option)
+          continue;
+
+        child.ErrorMessage = $"Option {child.Symbol.Name} Cannot be used together with --options-from-yaml-front-matter.";
+      }
+    });
+
+    // TODO: refac
     rootCommand.SetHandler(async (context) => {
       var parseResult = context.ParseResult;
       var inputFile = parseResult.GetValueForArgument(inputFileArg);
@@ -165,6 +185,14 @@ internal class CommandLineHelper(string[] args) {
         OutputFile = parseResult.GetValueForArgument(outputFileArg) ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf")),
         OpenAfterConversion = parseResult.GetValueForOption(openAfterConversionOption)
       };
+
+      var isParseFromYaml = parseResult!.GetValueForOption(fromYamlOption);
+      if (isParseFromYaml.HasValue && isParseFromYaml.Value == true) {
+        var converter = Markdown2PdfConverter.CreateWithInlineOptionsFromFile(inputFile);
+        var resultYaml = await handler(cliOptions, converter); // Runs actual logic here
+        context.ExitCode = (int)resultYaml;
+        return;
+      }
 
       var binder = new OptionBinder(
         headerPathOption,
@@ -189,7 +217,7 @@ internal class CommandLineHelper(string[] args) {
        );
 
       var options = binder.GetValue(context.BindingContext);
-      var result = await handler(cliOptions, options); // Runs actual logic here
+      var result = await handler(cliOptions, new Markdown2PdfConverter(options)); // Runs actual logic here
 
       context.ExitCode = (int)result;
     });

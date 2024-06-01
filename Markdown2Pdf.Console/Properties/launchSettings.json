@@ -2,7 +2,7 @@
   "profiles": {
     "MarkdownToPdf.Console": {
       "commandName": "Project",
-      "commandLineArgs": "README.md -o"
+      "commandLineArgs": "README.md -o --toc"
     }
   }
 }

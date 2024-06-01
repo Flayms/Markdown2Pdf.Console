@@ -1,10 +1,11 @@
-using CommandLine;
-
-namespace Markdown2Pdf.Console;
+﻿namespace Markdown2Pdf.Console;
 public class MarginOptions {
+
+  private readonly string _parameter;
 
   // TODO: solve better
   public MarginOptions(string parameter) {
+    this._parameter = parameter;
     var splitted = parameter.Split(',');
 
     switch (splitted.Length) {
@@ -35,15 +36,10 @@ public class MarginOptions {
     }
   }
 
-  [Option]
   public string? Top { get; set; }
-
-  [Option]
   public string? Right { get; set; }
-
-  [Option]
   public string? Bottom { get; set; }
-
-  [Option]
   public string? Left { get; set; }
+
+  public override string ToString() => this._parameter;
 }

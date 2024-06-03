@@ -7,7 +7,7 @@ var commandLineHelper = new CommandLineHelper(args);
 
 return (int) await commandLineHelper.Run(Handler);
 
-static async Task<ExitCode> Handler(Options cliOptions, Markdown2PdfConverter converter) {
+static async Task<ExitCode> Handler(CliOptions cliOptions, Markdown2PdfConverter converter) {
   Console.WriteLine("Converting markdown to pdf...");
 
   await converter.Convert(cliOptions.InputFile.FullName, cliOptions.OutputFile.FullName);

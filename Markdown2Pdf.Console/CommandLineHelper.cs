@@ -6,7 +6,118 @@ using Markdown2Pdf.Options;
 namespace Markdown2Pdf.Console;
 internal class CommandLineHelper(string[] args) {
 
-  public delegate Task<ExitCode> Handler(Options cliOptions, Markdown2PdfConverter options);
+  public delegate Task<ExitCode> Handler(CliOptions cliOptions, Markdown2PdfConverter options);
+
+  private readonly Argument<FileInfo> _inputFileArg = new(
+    name: "input-path",
+    description: "The path to the markdown file to parse."
+    );
+
+  private readonly Argument<FileInfo?> _outputFileArg = new(
+    name: "output-path",
+    description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
+    ) { Arity = ArgumentArity.ZeroOrOne };
+
+  private readonly Option<bool?> _fromYamlOption = new(
+    aliases: ["-y", "--options-from-yaml-front-matter"],
+    description: "If set, loads the options from a YAML front matter block. See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Markdown2PdfConverter#-createwithinlineoptionsfromfilestring"
+    );
+
+  private readonly Option<string?> _chromePathOption = new(
+       aliases: ["-c", "--chrome-path"],
+          description: "Path to chrome or chromium executable. Downloads it by itself if not set."
+       );
+
+  private readonly Option<string?> _codeHighlightThemeOption = new(
+       aliases: ["--code-highlight-theme"],
+          description: "The theme to use for styling the markdown code-blocks. " +
+       "Valid Values: See  https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes.");
+
+  private readonly Option<string?> _customHeadContentOption = new(
+          aliases: ["--custom-head-content"],
+                   description: "A string containing any content valid inside an html <head> to apply extra scripting / styling to the document.");
+
+  private readonly Option<string?> _documentTitleOption = new(
+    aliases: ["--document-title"],
+                   description: "The title of this document. " +
+          "Can be injected into the header / footer by adding the class document-title to the element.");
+
+  private readonly Option<bool?> _enableAutoLanguageDetectionOption = new(
+       aliases: ["--enable-auto-language-detection"],
+                         description: "Auto detect the language for code blocks without specfied language.");
+
+  private readonly Option<string?> _footerPathOption = new( // TODO: maybe use fileinfo
+    aliases: ["-f", "--footer-path"],
+    description: "Path to an html-file to use as the document-footer."
+    );
+
+  private readonly Option<string?> _formatOption = new(
+       aliases: ["--format"],
+          description: "The paper format for the PDF. Valid values: Letter, Legal, Tabloid, Ledger, A0-A6."
+       );
+
+  private readonly Option<string?> _headerPathOption = new(
+    aliases: ["-h", "--header-path"],
+       description: "Path to an html-file to use as the document-header."
+       );
+
+  private readonly Option<bool?> _isLandscapeOption = new(
+       aliases: ["-l", "--is-landscape"],
+             description: "Paper orientation."
+       );
+
+  private readonly Option<bool?> _keepHtmlOption = new(
+    aliases: ["-k", "--keep-html"],
+       description: "If this is set, the temporary html file does not get deleted.");
+
+  private readonly Option<MarginOptions?> _marginOptionsOption = new(
+    aliases: ["-m", "--margins"],
+       description: "Css-Margins for the content in the pdf to generate. Values must be comma-separated."
+       );
+
+  private readonly Option<string?> _metadataTitleOption= new(
+    aliases: ["--metadata-title"],
+       description: "The title of the document. Can be injected into the header / footer by adding the class document-title to the element."
+       );
+
+  private readonly Option<bool?> _openAfterConversionOption = new(
+    aliases: ["-o", "--open-after-conversion"],
+       description: "If enabled, opens the generated pdf after execution."
+       );
+
+  private readonly Option<decimal?> _scaleOption = new(
+    aliases: ["-s", "--scale"],
+          description: "Scale of the content. Must be between 0.1 and 2."
+          );
+
+  private readonly Option<string?> _themeOption = new(
+    aliases: ["-t", "--theme"],
+          description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
+          );
+
+  private readonly Option<ListStyle?> _tocListStyleOption = new(
+    aliases: ["--toc-list-style"],
+             description: "Decides which characters to use before the TOC items."
+             );
+
+  private readonly Option<int?> _tocMinDepthOption = new(
+    aliases: ["--toc-min-depth"],
+          description: "The minimum level of heading depth to include in the TOC (e.g. 1 will only include headings greater than or equal to <h1>). Range: 1 to 6."
+          );
+
+  private readonly Option<int?> _tocMaxDepthOption = new(
+       aliases: ["--toc-max-depth"],
+          description: "The maximum level of heading depth to include in the TOC (e.g. 3 will include headings less than or equal to <h3>). Range: 1 to 6."
+       );
+
+  private readonly Option<bool?> _tocHasColoredLinksOption = new(
+    aliases: ["--toc-has-colored-links"],
+             description: "Determines if the TOC links should have the default link color (instead of looking  like normal text)."
+             );
+
+  private readonly Option<Leader?> _tocPageNumberTabLeaderOption = new(
+    aliases: ["--toc-page-numbers-tab-leader"],
+             description: "Generate TOC Page Numbers and use the given character to lead from the TOC title to the page number.");
 
   public async Task<ExitCode> Run(Handler handler) {
     var rootCommand = _CreateCommand(handler);
@@ -18,158 +129,52 @@ internal class CommandLineHelper(string[] args) {
   }
 
   // TODO: maybe nullability is not needed
-  private static RootCommand _CreateCommand(Handler handler) {
-    var inputFileArg = new Argument<FileInfo>(
-      name: "input-path",
-      description: "The path to the markdown file to parse."
-    );
-    inputFileArg.AddValidator(Utils.ValidateFileInfo);
-
-    var outputFileArg = new Argument<FileInfo?>(
-      name: "output-path",
-      description: "Path where the PDF file should be generated. If not set, defaults to <markdown-filename>.pdf."
-    ) { Arity = ArgumentArity.ZeroOrOne };
-    outputFileArg.AddValidator(Utils.ValidateFileInfo);
-
-    var fromYamlOption = new Option<bool?>(
-      aliases: ["-y", "--options-from-yaml-front-matter"],
-      description: "If set, loads the options from a YAML front matter block. See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Markdown2PdfConverter#-createwithinlineoptionsfromfilestring"
-    );
-
-    var chromePathOption = new Option<string?>(
-      aliases: ["-c", "--chrome-path"],
-      description: "Path to chrome or chromium executable. Downloads it by itself if not set."
-    );
-    chromePathOption.AddValidator(Utils.ValidateFilePath);
-
-    var codeHighlightThemeOption = new Option<string?>(
-      aliases: ["--code-highlight-theme"],
-      description: "The theme to use for styling the markdown code-blocks. " +
-      "Valid Values: See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes." // TODO: switch to wiki
-    );
-    codeHighlightThemeOption.FromAmong(Utils.GetAllPublicPropertyNames<CodeHighlightTheme>());
-    codeHighlightThemeOption.ArgumentHelpName = "code-highlight-theme";
-
-    var customHeadContentOption = new Option<string?>(
-      aliases: ["--custom-head-content"],
-      description: "A string containing any content valid inside an html <head> to apply extra scripting / styling to the document."
-    );
-    var documentTitleOption = new Option<string?>(
-      aliases: ["--document-title"],
-      description: "The title of this document. " +
-      "Can be injected into the header / footer by adding the class document-title to the element."
-    );
-    var enableAutoLanguageDetectionOption = new Option<bool?>(
-      aliases: ["--enable-auto-language-detection"],
-      description: "Auto detect the language for code blocks without specfied language."
-    );
-    var footerPathOption = new Option<string?>(
-      aliases: ["-f", "--footer-path"],
-      description: "Path to an html-file to use as the document-footer."
-    );
-    footerPathOption.AddValidator(Utils.ValidateFilePath);
-    var formatOption = new Option<string?>(
-      aliases: ["--format"],
-      description: "The paper format for the PDF. " +
-      "Valid values: Letter, Legal, Tabloid, Ledger, A0-A6"
-    );
-    var headerPathOption = new Option<string?>(
-      aliases: ["-h", "--header-path"],
-      description: "Path to an html-file to use as the document-header."
-    );
-   headerPathOption.AddValidator(Utils.ValidateFilePath);
-    var isLandscapeOption = new Option<bool?>(
-      aliases: ["-l", "--is-landscape"],
-      description: "Paper orientation."
-    );
-    var keepHtmlOption = new Option<bool?>(
-      aliases: ["-k", "--keep-html"],
-      description: "If this is set, the temporary html file does not get deleted."
-    );
-    var marginOptionsOption = new Option<MarginOptions?>(
-      aliases: ["-m", "--margins"],
-      description: "Css-Margins for the content in the pdf to generate. Values must be comma-separated."
-    );
-    marginOptionsOption.SetDefaultValue(new MarginOptions("50px"));
-
-    var metadataTitleOption = new Option<string?>(
-      aliases: ["--metadata-title"],
-      description: "The title of the document. Can be injected into the header / footer by adding the class document-title to the element."
-    );
-    var openAfterConversionOption = new Option<bool>(
-      aliases: ["-o", "--open-after-conversion"],
-      description: "If enabled, opens the generated pdf after execution."
-    );
-    var scaleOption = new Option<decimal?>(
-      aliases: ["-s", "--scale"],
-      description: "Scale of the content. Must be between 0.1 and 2."
-    );
-    var themeOption = new Option<string?>(
-      aliases: ["-t", "--theme"],
-      description: "The theme to use for styling the document. Can either be a predefined value (github, latex) or a path to a custom css."
-    );
-
-    var tocListStyleOption = new Option<ListStyle?>(
-      aliases: ["--toc-list-style"],
-      description: "Decides which characters to use before the TOC items."
-    );
-
-    var tocMinDepthOption = new Option<int?>(
-      aliases: ["--toc-min-depth"],
-      description: "The minimum level of heading depth to include in the TOC (e.g. 1 will only include headings greater than or equal to <h1>). Range: 1 to 6."
-    );
-    tocMinDepthOption.AddValidator(r => Utils.ValidateBounds(r, 1, 6));
-
-    var tocMaxDepthOption = new Option<int?>(
-      aliases: ["--toc-max-depth"],
-      description: "The maximum level of heading depth to include in the TOC (e.g. 3 will include headings less than or equal to <h3>). Range: 1 to 6."
-    );
-    tocMaxDepthOption.AddValidator(r => Utils.ValidateBounds(r, 1, 6));
-
-    var tocHasColoredLinksOption = new Option<bool?>(
-      aliases: ["--toc-has-colored-links"],
-      description: "Determines if the TOC links should have the default link color (instead of looking  like normal text)."
-    );
-
-    var tocPageNumberTabLeaderOption = new Option<Leader?>(
-      aliases: ["--toc-page-numbers-tab-leader"],
-      description: "Generate TOC Page Numbers and use the given character to lead from the TOC title to the page number."
-    );
+  private RootCommand _CreateCommand(Handler handler) {
+    this._inputFileArg.AddValidator(Utils.ValidateFileInfo);
+    this._outputFileArg.AddValidator(Utils.ValidateFileInfo);
+    this._chromePathOption.AddValidator(Utils.ValidateFilePath);
+    this._codeHighlightThemeOption.FromAmong(Utils.GetAllPublicPropertyNames<CodeHighlightTheme>());
+    this._codeHighlightThemeOption.ArgumentHelpName = "code-highlight-theme";
+    this._footerPathOption.AddValidator(Utils.ValidateFilePath);
+    this._headerPathOption.AddValidator(Utils.ValidateFilePath);
+    this._marginOptionsOption.SetDefaultValue(new MarginOptions("50px"));
+    this._tocMinDepthOption.AddValidator(r => Utils.ValidateBounds(r, 1, 6));
+    this._tocMaxDepthOption.AddValidator(r => Utils.ValidateBounds(r, 1, 6));
 
     var rootCommand = new RootCommand($"Command-line application for converting Markdown to Pdf.{Environment.NewLine}" +
       $"Note: setting any of the --toc options will cause a TOC to be generated within the placeholders.") {
-      inputFileArg,
-      outputFileArg,
-      fromYamlOption,
-      headerPathOption,
-      footerPathOption,
-      openAfterConversionOption,
-      marginOptionsOption,
-      chromePathOption,
-      keepHtmlOption,
-      themeOption,
-      codeHighlightThemeOption,
-      documentTitleOption,
-      customHeadContentOption,
-      isLandscapeOption,
-      formatOption,
-      scaleOption,
-      tocMinDepthOption,
-      tocMaxDepthOption,
-      tocListStyleOption,
-      tocHasColoredLinksOption,
-      tocPageNumberTabLeaderOption,
+      this._inputFileArg,
+      this._outputFileArg,
+      this._fromYamlOption,
+      this._headerPathOption,
+      this._footerPathOption,
+      this._openAfterConversionOption,
+      this._marginOptionsOption,
+      this._chromePathOption,
+      this._keepHtmlOption,
+      this._themeOption,
+      this._codeHighlightThemeOption,
+      this._documentTitleOption,
+      this._customHeadContentOption,
+      this._isLandscapeOption,
+      this._formatOption,
+      this._scaleOption,
+      this._tocMinDepthOption,
+      this._tocMaxDepthOption,
+      this._tocListStyleOption,
+      this._tocHasColoredLinksOption,
+      this._tocPageNumberTabLeaderOption,
     };
 
     // TODO: check if this works as intended
     rootCommand.AddValidator(result => {
-      var yamlResult = result.Children.FirstOrDefault(s => s.Symbol == fromYamlOption);
+      var yamlResult = result.Children.FirstOrDefault(s => s.Symbol == this._fromYamlOption);
       if (yamlResult is null)
         return;
 
       foreach (var child in result.Children) {
         // only option allowed together with yaml result is open-after-conversion
-        if (child.Symbol == openAfterConversionOption || child == yamlResult || child.Symbol is not Option)
+        if (child.Symbol == this._openAfterConversionOption || child == yamlResult || child.Symbol is not Option)
           continue;
 
         child.ErrorMessage = $"Option {child.Symbol.Name} Cannot be used together with --options-from-yaml-front-matter.";
@@ -179,14 +184,14 @@ internal class CommandLineHelper(string[] args) {
     // TODO: refac
     rootCommand.SetHandler(async (context) => {
       var parseResult = context.ParseResult;
-      var inputFile = parseResult.GetValueForArgument(inputFileArg);
-      var cliOptions = new Options {
+      var inputFile = parseResult.GetValueForArgument(this._inputFileArg);
+      var cliOptions = new CliOptions {
         InputFile = inputFile,
-        OutputFile = parseResult.GetValueForArgument(outputFileArg) ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf")),
-        OpenAfterConversion = parseResult.GetValueForOption(openAfterConversionOption)
+        OutputFile = parseResult.GetValueForArgument(this._outputFileArg) ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf")),
+        OpenAfterConversion = parseResult.GetValueForOption(this._openAfterConversionOption).Value
       };
 
-      var isParseFromYaml = parseResult!.GetValueForOption(fromYamlOption);
+      var isParseFromYaml = parseResult!.GetValueForOption(this._fromYamlOption);
       if (isParseFromYaml.HasValue && isParseFromYaml.Value == true) {
         var converter = Markdown2PdfConverter.CreateWithInlineOptionsFromFile(inputFile);
         var resultYaml = await handler(cliOptions, converter); // Runs actual logic here
@@ -195,25 +200,25 @@ internal class CommandLineHelper(string[] args) {
       }
 
       var binder = new OptionBinder(
-        headerPathOption,
-        footerPathOption,
-        marginOptionsOption,
-        metadataTitleOption,
-        chromePathOption,
-        keepHtmlOption,
-        themeOption,
-        codeHighlightThemeOption,
-        documentTitleOption,
-        enableAutoLanguageDetectionOption,
-        customHeadContentOption,
-        isLandscapeOption,
-        formatOption,
-        scaleOption,
-        tocMinDepthOption,
-        tocMaxDepthOption,
-        tocListStyleOption,
-        tocHasColoredLinksOption,
-        tocPageNumberTabLeaderOption
+        this._headerPathOption,
+        this._footerPathOption,
+        this._marginOptionsOption,
+        this._metadataTitleOption,
+        this._chromePathOption,
+        this._keepHtmlOption,
+        this._themeOption,
+        this._codeHighlightThemeOption,
+        this._documentTitleOption,
+        this._enableAutoLanguageDetectionOption,
+        this._customHeadContentOption,
+        this._isLandscapeOption,
+        this._formatOption,
+        this._scaleOption,
+        this._tocMinDepthOption,
+        this._tocMaxDepthOption,
+        this._tocListStyleOption,
+        this._tocHasColoredLinksOption,
+        this._tocPageNumberTabLeaderOption
        );
 
       var options = binder.GetValue(context.BindingContext);

@@ -19,7 +19,7 @@ internal class CommandLineHelper(string[] args) {
   }
 
   private RootCommand _CreateCommand(Handler handler) {
-    var symbols = new CliSymbols();
+    var symbols = this._symbols;
 
     var rootCommand = new RootCommand($"Command-line application for converting Markdown to Pdf.{Environment.NewLine}" +
       $"Note: setting any of the --toc options will cause a TOC to be generated within the placeholders.") {

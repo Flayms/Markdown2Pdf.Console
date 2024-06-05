@@ -28,7 +28,7 @@ internal class CliSymbols {
   public Option<string?> CodeHighlightThemeOption{ get; } = new(
        aliases: ["--code-highlight-theme"],
           description: "The theme to use for styling the markdown code-blocks. " +
-       "Valid Values: See  https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes.");
+       "Valid Values: See https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Options.CodeHighlightTheme for an overview of all themes.");
 
   public Option<string?> CustomHeadContentOption{ get; } = new(
           aliases: ["--custom-head-content"],

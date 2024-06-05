@@ -75,8 +75,11 @@ internal class CommandLineHelper(string[] args) {
       InputFile = inputFile,
       OutputFile = parseResult.GetValueForArgument(symbols.OutputFileArg)
       ?? new FileInfo(Path.ChangeExtension(inputFile.FullName, "pdf")),
-      OpenAfterConversion = parseResult.GetValueForOption(symbols.OpenAfterConversionOption).Value
     };
+
+    var openAfterConversion = parseResult.GetValueForOption(symbols.OpenAfterConversionOption);
+    if (openAfterConversion.HasValue)
+      cliOptions.OpenAfterConversion = openAfterConversion.Value;
 
     var isParseFromYaml = parseResult!.GetValueForOption(symbols.FromYamlOption);
 

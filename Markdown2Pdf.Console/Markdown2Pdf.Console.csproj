@@ -1,8 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <Description>Library for converting Markdown to PDF.</Description>
+    <OutputType>Exe</OutputType>
+    <PackasTool>true</PackasTool>
+    <ToolCommandName>md2pdf</ToolCommandName>
+    <PackageOutputPath>./bin/nupkg</PackageOutputPath>
+		<PackageProjectUrl>https://github.com/Flayms/Markdown2Pdf.Console</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>md;markdown;pdf;markdown2pdf;md2pdf;markdowntopdf;markdown to pdf;console;cli;tool</PackageTags>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<PackageId>Markdown2Pdf.Console</PackageId>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <ApplicationIcon>md2pdf-console.ico</ApplicationIcon>
@@ -22,6 +33,9 @@ npm install</PreBuildEvent>
     <None Include="..\README.md" Link="README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)node_modules\" Pack="true" PackagePath="tools\net8.0\any\node_modules" />
   </ItemGroup>
 
   <ItemGroup>

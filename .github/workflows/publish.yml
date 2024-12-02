@@ -21,7 +21,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Create new version from commits and write to enviornment variables (env.Version_Number + env.Tag_Name + env.Release_Name)
+    # Create new version from commits and write to enviornment variables (env.VERSION_NUMBER + env.TAG_NAME + env.RELEASE_NAME)
     - name: Create Version
       run: bash ".github/workflows/create-next-version.sh" 
     
@@ -45,7 +45,7 @@ jobs:
            -o:"Markdown2Pdf.Console/bin/$runtime" \
            -p:PublishSingleFile=true \
            -p:SelfContained=true \
-           /p:Version=${{ env.Version_Number }}
+           /p:Version=${{ env.VERSION_NUMBER }}
          (cd "Markdown2Pdf.Console/bin/$runtime" && npm install && zip -r ./../md2pdf_$runtime.zip  ./*)
         done
 
@@ -65,8 +65,16 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: "${{ env.Tag_Name }}"
-        name: "${{ env.Release_Name }}"
+        tag_name: "${{ env.TAG_NAME }}"
+        name: "${{ env.RELEASE_NAME }}"
         body_path: "${{ github.workspace }}\\release-notes.md"
         token: ${{ secrets.GITHUB_TOKEN }}
         files: ./Markdown2Pdf.Console/bin/*.zip
+
+    # Create nuget-package
+    - name: Pack
+      run: dotnet pack --configuration Release --no-restore /p:Version=${{ env.VERSION_NUMBER }}
+      
+    # Push nuget-package to nuget.org
+    - name: Push
+      run: dotnet nuget push Markdown2Pdf.Console/bin/nupkg/Markdown2Pdf.Console.${{ env.VERSION_NUMBER }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json  --skip-duplicate

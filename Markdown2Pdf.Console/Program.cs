@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics;
 using Markdown2Pdf;
 using Markdown2Pdf.Console;
-using Markdown2Pdf.Options;
 
 var commandLineHelper = new CommandLineHelper(args);
 
-return (int) await commandLineHelper.Run(Handler);
+return (int)await commandLineHelper.Run(Handler);
 
 static async Task<ExitCode> Handler(CliOptions cliOptions, Markdown2PdfConverter converter) {
   Console.WriteLine("Converting markdown to pdf...");

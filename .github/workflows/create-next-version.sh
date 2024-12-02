@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Determines the next version number based on the previous conventional commit messages and writes it into the github environment variables.
 TEMP_FILE_NAME="tmp.txt"
 LAST_TAG=$(git ls-remote --tags --sort=committerdate | grep -o 'v.*' | sort -r | head -1)
 
@@ -90,12 +91,12 @@ TAG_NAME="v$VERSION_NUMBER"
 RELEASE_NAME="Version $TAG_NAME"
 
 # informational output
-echo "Tag_Name:       $TAG_NAME"
-echo "Release_Name:   $RELEASE_NAME"
-echo "Version_Number: $VERSION_NUMBER"
+echo "TAG_NAME:       $TAG_NAME"
+echo "RELEASE_NAME:   $RELEASE_NAME"
+echo "VERSION_NUMBER: $VERSION_NUMBER"
 
-# write to github enviornment variables
+# write to github environment variables
 TEST_VALUE="Hello Variable!"
-echo "Tag_Name=$TAG_NAME" >> $GITHUB_ENV
-echo "Release_Name=$RELEASE_NAME" >> $GITHUB_ENV
-echo "Version_Number=$VERSION_NUMBER" >> $GITHUB_ENV
+echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+echo "VERSION_NUMBER=$VERSION_NUMBER" >> $GITHUB_ENV

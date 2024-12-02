@@ -36,9 +36,9 @@ internal class OptionBinder(CliSymbols symbols) : BinderBase<Markdown2PdfOptions
     this._HandleOption(symbols.ChromePathOption, value => options.ChromePath = value);
     this._HandleOption(symbols.KeepHtmlOption, value => options.KeepHtml = value!.Value);
     this._HandleOption(symbols.ThemeOption, value => {
-        options.Theme = PropertyService.TryGetPropertyValue<Theme>(value, out var theme)
-      ? theme
-      : Theme.Custom(value);
+      options.Theme = PropertyService.TryGetPropertyValue<Theme>(value, out var theme)
+    ? theme
+    : Theme.Custom(value);
     });
     this._HandleOption(symbols.CodeHighlightThemeOption, codeHighlightThemeName => {
       options.CodeHighlightTheme = PropertyService.TryGetPropertyValue<CodeHighlightTheme>(codeHighlightThemeName, out var codeHighlightTheme)

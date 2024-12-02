@@ -15,7 +15,7 @@ internal class CommandLineHelper(string[] args) {
       .UseDefaults()
       .Build();
 
-    return (ExitCode) await parser.InvokeAsync(args);
+    return (ExitCode)await parser.InvokeAsync(args);
   }
 
   private RootCommand _CreateCommand(Handler handler) {

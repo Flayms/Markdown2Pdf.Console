@@ -9,9 +9,16 @@ Command-line application for converting Markdown to PDF, using [Markdown2Pdf](ht
 
 <!-- TOC -->
 
-## Download
+## Installation
 
-Download build for Windows or Linux at [Releases](https://github.com/Flayms/Markdown2Pdf.Console/releases/latest)
+This app can be installed as a dotnet tool:
+
+```sh
+dotnet tool install --global Markdown2Pdf.Console
+```
+<br>
+
+Alternatively the latest builds for Windows and Linux can be downloaded at [Releases](https://github.com/Flayms/Markdown2Pdf.Console/releases/latest).
 
 ## Getting started
 
@@ -72,4 +79,3 @@ Arguments:
 
 > [!TIP]
 > All the options can also be directly embedded in the Markdown with a YAML front matter block. See [Example](https://github.com/Flayms/Markdown2Pdf/wiki/Markdown2Pdf.Markdown2PdfConverter#examples-1).
-
